@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMP Notice Board</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>SMP Notice Board</h1>
+            <div class="header-controls">
+                <button id="darkModeToggle" class="dark-mode-btn">🌙</button>
+                <button id="logoutBtn" class="logout-btn" style="display: none;">Logout</button>
+                <button id="adminBtn" class="admin-btn">Admin</button>
+            </div>
+        </header>
+        
+        <div class="notice-container" id="noticeContainer">
+            <!-- Notice cards will be dynamically inserted here -->
+        </div>
+        
+        <div class="navigation">
+            <div class="nav-dots" id="navDots"></div>
+            <div class="swipe-indicator">← Swipe →</div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-content">
+            <div class="admin-header">
+                <h2>Admin Panel</h2>
+                <div class="admin-controls">
+                    <button id="closeAdmin" class="close-btn">×</button>
+                </div>
+            </div>
+            
+            <form id="noticeForm" class="notice-form">
+                <input type="text" id="noticeTitle" placeholder="Notice Title" required>
+                <select id="noticeCourse" required>
+                    <option value="">Select Course</option>
+                    <option value="CE">CE - Civil Engineering</option>
+                    <option value="ME">ME - Mechanical Engineering</option>
+                    <option value="EC">EC - Electronics & Communication</option>
+                    <option value="CS">CS - Computer Science</option>
+                    <option value="EE">EE - Electrical Engineering</option>
+                    <option value="ALL">All Courses</option>
+                </select>
+                <select id="noticePriority" required>
+                    <option value="">Select Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <select id="noticeCategory" required>
+                    <option value="">Select Category</option>
+                    <option value="Notice">Notice</option>
+                    <option value="Memo">Memo</option>
+                    <option value="Result">Result</option>
+                    <option value="Link">Useful Link</option>
+                </select>
+                <textarea id="noticeContent" placeholder="Notice Content" required></textarea>
+                <input type="url" id="noticeLink" placeholder="Link (optional)">
+                <button type="submit" id="submitBtn">Add Notice</button>
+            </form>
+            
+            <div class="sync-status" id="syncStatus">
+                <span class="status-indicator" id="statusIndicator">●</span>
+                <span id="statusText">Auto-Sync Ready</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-content">
+            <h3>Admin Access</h3>
+            <input type="password" id="adminPassword" placeholder="Enter admin keyword">
+            <button id="loginBtn">Login</button>
+            <button id="cancelLogin">Cancel</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
