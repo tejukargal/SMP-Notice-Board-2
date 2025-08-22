@@ -6,6 +6,7 @@ let notices = [
         content: "The time table for upcoming semester examinations has been released. Students are advised to check the examination schedule and prepare accordingly.",
         course: "ALL",
         priority: "High",
+        importance: "Critical",
         category: "Notice",
         date: "2025-08-20",
         link: ""
@@ -16,6 +17,7 @@ let notices = [
         content: "A hands-on workshop on AutoCAD software will be conducted for final year students. Registration is mandatory.",
         course: "CE",
         priority: "Medium",
+        importance: "Urgent",
         category: "Notice",
         date: "2025-08-18",
         link: ""
@@ -26,6 +28,7 @@ let notices = [
         content: "Industrial visit to Toyota Motors manufacturing unit has been arranged for mechanical engineering students.",
         course: "ME",
         priority: "Medium",
+        importance: "Important",
         category: "Notice",
         date: "2025-08-17",
         link: ""
@@ -36,6 +39,7 @@ let notices = [
         content: "Merit-based scholarship applications are now open for all courses. Last date for submission is 30th August 2025.",
         course: "ALL",
         priority: "High",
+        importance: "Urgent",
         category: "Memo",
         date: "2025-08-15",
         link: "https://scholarship.gov.in"
@@ -46,6 +50,7 @@ let notices = [
         content: "Results of the inter-department programming contest have been declared. Congratulations to all winners!",
         course: "CS",
         priority: "Low",
+        importance: "Normal",
         category: "Result",
         date: "2025-08-14",
         link: ""
@@ -56,6 +61,7 @@ let notices = [
         content: "Annual circuit design competition for Electronics and Electrical students. Prize money up to Rs. 10,000.",
         course: "EC",
         priority: "Medium",
+        importance: "Important",
         category: "Notice",
         date: "2025-08-12",
         link: ""
@@ -66,6 +72,7 @@ let notices = [
         content: "New schedule for Power System Laboratory has been updated. Check the timetable for revised timings.",
         course: "EE",
         priority: "Medium",
+        importance: "Normal",
         category: "Memo",
         date: "2025-08-10",
         link: ""
@@ -86,8 +93,13 @@ const noticeForm = document.getElementById('noticeForm');
 const darkModeToggle = document.getElementById('darkModeToggle');
 const logoutBtn = document.getElementById('logoutBtn');
 const submitBtn = document.getElementById('submitBtn');
+const addNoticeBtn = document.getElementById('addNoticeBtn');
 
-// Sync elements
+// Form elements
+const noticeContent = document.getElementById('noticeContent');
+const noticeImportance = document.getElementById('noticeImportance');
+
+// Sync elements (keeping but not showing errors in UI)
 const statusIndicator = document.getElementById('statusIndicator');
 const statusText = document.getElementById('statusText');
 
@@ -118,8 +130,31 @@ function init() {
     }
 }
 
+// Sort notices by importance and reassign serial numbers
+function sortAndReorderNotices() {
+    const importanceOrder = {
+        'Critical': 1,
+        'Urgent': 2,
+        'Important': 3,
+        'Normal': 4
+    };
+    
+    // Sort by importance, then by date (newest first)
+    notices.sort((a, b) => {
+        const importanceDiff = importanceOrder[a.importance] - importanceOrder[b.importance];
+        if (importanceDiff !== 0) return importanceDiff;
+        return new Date(b.date) - new Date(a.date);
+    });
+    
+    // Reassign serial numbers based on new order
+    notices.forEach((notice, index) => {
+        notice.id = index + 1;
+    });
+}
+
 // Render all notices
 function renderNotices() {
+    sortAndReorderNotices();
     noticeContainer.innerHTML = '';
     
     notices.forEach((notice, index) => {
@@ -240,6 +275,15 @@ function setupEventListeners() {
 
     // Logout button
     logoutBtn.addEventListener('click', handleLogout);
+
+    // Add notice button
+    addNoticeBtn.addEventListener('click', () => {
+        adminPanel.style.display = 'flex';
+        resetNoticeForm();
+    });
+
+    // Rich text editor functionality
+    setupRichTextEditor();
 
     // Close admin panel
     closeAdmin.addEventListener('click', () => {
@@ -364,12 +408,10 @@ function handleLogin() {
     if (password === 'teju*smp') {
         isAdminLoggedIn = true;
         loginModal.style.display = 'none';
-        adminPanel.style.display = 'flex';
         adminPassword.value = '';
-        adminBtn.textContent = 'Admin ✓';
-        adminBtn.style.background = '#27ae60';
         
-        // Show logout button and hide admin button
+        // Show add notice and logout buttons, hide admin button
+        addNoticeBtn.style.display = 'block';
         logoutBtn.style.display = 'block';
         adminBtn.style.display = 'none';
         
@@ -392,9 +434,10 @@ function handleNoticeSubmission(e) {
             notices[noticeIndex] = {
                 ...notices[noticeIndex],
                 title: document.getElementById('noticeTitle').value,
-                content: document.getElementById('noticeContent').value,
+                content: noticeContent.innerHTML,
                 course: document.getElementById('noticeCourse').value,
                 priority: document.getElementById('noticePriority').value,
+                importance: noticeImportance.value,
                 category: document.getElementById('noticeCategory').value,
                 link: document.getElementById('noticeLink').value || ''
             };
@@ -402,29 +445,28 @@ function handleNoticeSubmission(e) {
         editingNoticeId = null;
         submitBtn.textContent = 'Add Notice';
     } else {
-        // Add new notice
+        // Add new notice - ID will be reassigned during sorting
         const newNotice = {
-            id: Math.max(...notices.map(n => n.id)) + 1,
+            id: notices.length + 1,
             title: document.getElementById('noticeTitle').value,
-            content: document.getElementById('noticeContent').value,
+            content: noticeContent.innerHTML,
             course: document.getElementById('noticeCourse').value,
             priority: document.getElementById('noticePriority').value,
+            importance: noticeImportance.value,
             category: document.getElementById('noticeCategory').value,
             date: new Date().toISOString().split('T')[0],
             link: document.getElementById('noticeLink').value || ''
         };
-        notices.unshift(newNotice);
+        notices.push(newNotice);
     }
 
     saveLocalNotices();
     renderNotices();
-    noticeForm.reset();
+    resetNoticeForm();
     adminPanel.style.display = 'none';
     
-    // Scroll to the first notice if new, or stay at current if editing
-    if (!editingNoticeId) {
-        setTimeout(() => scrollToNotice(0), 100);
-    }
+    // Scroll to the first notice after sorting
+    setTimeout(() => scrollToNotice(0), 100);
 }
 
 // Update current notice index based on scroll position
@@ -485,11 +527,10 @@ function loadDarkModePreference() {
 // Admin logout function
 function handleLogout() {
     isAdminLoggedIn = false;
-    adminBtn.textContent = 'Admin';
-    adminBtn.style.background = '#e74c3c';
     adminPanel.style.display = 'none';
     
-    // Hide logout button and show admin button
+    // Hide add notice and logout buttons, show admin button
+    addNoticeBtn.style.display = 'none';
     logoutBtn.style.display = 'none';
     adminBtn.style.display = 'block';
     
@@ -502,9 +543,10 @@ function editNotice(noticeId) {
     if (notice) {
         editingNoticeId = noticeId;
         document.getElementById('noticeTitle').value = notice.title;
-        document.getElementById('noticeContent').value = notice.content;
+        noticeContent.innerHTML = notice.content;
         document.getElementById('noticeCourse').value = notice.course;
         document.getElementById('noticePriority').value = notice.priority;
+        noticeImportance.value = notice.importance || 'Normal';
         document.getElementById('noticeCategory').value = notice.category;
         document.getElementById('noticeLink').value = notice.link || '';
         submitBtn.textContent = 'Update Notice';
@@ -532,6 +574,52 @@ function resetNoticeForm() {
     editingNoticeId = null;
     submitBtn.textContent = 'Add Notice';
     noticeForm.reset();
+    noticeContent.innerHTML = '';
+}
+
+// Setup rich text editor
+function setupRichTextEditor() {
+    const editorButtons = document.querySelectorAll('.editor-btn');
+    
+    editorButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const command = button.getAttribute('data-command');
+            
+            // Focus the editor before executing command
+            noticeContent.focus();
+            
+            // Execute the formatting command
+            document.execCommand(command, false, null);
+            
+            // Update button states
+            updateEditorButtonStates();
+        });
+    });
+    
+    // Update button states when selection changes
+    noticeContent.addEventListener('mouseup', updateEditorButtonStates);
+    noticeContent.addEventListener('keyup', updateEditorButtonStates);
+}
+
+// Update editor button states based on current selection
+function updateEditorButtonStates() {
+    const editorButtons = document.querySelectorAll('.editor-btn');
+    
+    editorButtons.forEach(button => {
+        const command = button.getAttribute('data-command');
+        
+        try {
+            if (document.queryCommandState(command)) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        } catch (e) {
+            // Some commands don't support queryCommandState
+            button.classList.remove('active');
+        }
+    });
 }
 
 // Tab switching function
@@ -681,7 +769,7 @@ function setupAutoSync() {
                 updateSyncStatus('connected', `Last synced: ${new Date().toLocaleTimeString()}`);
             } catch (error) {
                 console.error('Auto-sync failed:', error);
-                updateSyncStatus('error', 'Auto-sync failed');
+                // Don't show error in UI, just log it
             }
         }, 3 * 60 * 1000);
     }

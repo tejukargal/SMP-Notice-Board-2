@@ -12,6 +12,7 @@
             <h1>SMP Notice Board</h1>
             <div class="header-controls">
                 <button id="darkModeToggle" class="dark-mode-btn">🌙</button>
+                <button id="addNoticeBtn" class="add-notice-btn" style="display: none;">+ Add Notice</button>
                 <button id="logoutBtn" class="logout-btn" style="display: none;">Logout</button>
                 <button id="adminBtn" class="admin-btn">Admin</button>
             </div>
@@ -39,37 +40,61 @@
             
             <form id="noticeForm" class="notice-form">
                 <input type="text" id="noticeTitle" placeholder="Notice Title" required>
-                <select id="noticeCourse" required>
-                    <option value="">Select Course</option>
-                    <option value="CE">CE - Civil Engineering</option>
-                    <option value="ME">ME - Mechanical Engineering</option>
-                    <option value="EC">EC - Electronics & Communication</option>
-                    <option value="CS">CS - Computer Science</option>
-                    <option value="EE">EE - Electrical Engineering</option>
-                    <option value="ALL">All Courses</option>
-                </select>
-                <select id="noticePriority" required>
-                    <option value="">Select Priority</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                </select>
-                <select id="noticeCategory" required>
-                    <option value="">Select Category</option>
-                    <option value="Notice">Notice</option>
-                    <option value="Memo">Memo</option>
-                    <option value="Result">Result</option>
-                    <option value="Link">Useful Link</option>
-                </select>
-                <textarea id="noticeContent" placeholder="Notice Content" required></textarea>
+                
+                <div class="form-row">
+                    <select id="noticeCourse" required>
+                        <option value="">Select Course</option>
+                        <option value="CE">CE - Civil Engineering</option>
+                        <option value="ME">ME - Mechanical Engineering</option>
+                        <option value="EC">EC - Electronics & Communication</option>
+                        <option value="CS">CS - Computer Science</option>
+                        <option value="EE">EE - Electrical Engineering</option>
+                        <option value="ALL">All Courses</option>
+                    </select>
+                    
+                    <select id="noticeImportance" required>
+                        <option value="">Select Importance</option>
+                        <option value="Critical">Critical</option>
+                        <option value="Urgent">Urgent</option>
+                        <option value="Important">Important</option>
+                        <option value="Normal">Normal</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <select id="noticePriority" required>
+                        <option value="">Select Priority</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                    
+                    <select id="noticeCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="Notice">Notice</option>
+                        <option value="Memo">Memo</option>
+                        <option value="Result">Result</option>
+                        <option value="Link">Useful Link</option>
+                    </select>
+                </div>
+                
+                <div class="text-editor">
+                    <div class="editor-toolbar">
+                        <button type="button" class="editor-btn" data-command="bold" title="Bold"><b>B</b></button>
+                        <button type="button" class="editor-btn" data-command="italic" title="Italic"><i>I</i></button>
+                        <button type="button" class="editor-btn" data-command="underline" title="Underline"><u>U</u></button>
+                        <span class="separator">|</span>
+                        <button type="button" class="editor-btn" data-command="insertUnorderedList" title="Bullet List">• List</button>
+                        <button type="button" class="editor-btn" data-command="insertOrderedList" title="Numbered List">1. List</button>
+                        <span class="separator">|</span>
+                        <button type="button" class="editor-btn" data-command="removeFormat" title="Clear Formatting">Clear</button>
+                    </div>
+                    <div id="noticeContent" class="editor-content" contenteditable="true" placeholder="Enter notice content here..."></div>
+                </div>
+                
                 <input type="url" id="noticeLink" placeholder="Link (optional)">
                 <button type="submit" id="submitBtn">Add Notice</button>
             </form>
-            
-            <div class="sync-status" id="syncStatus">
-                <span class="status-indicator" id="statusIndicator">●</span>
-                <span id="statusText">Auto-Sync Ready</span>
-            </div>
         </div>
     </div>
 

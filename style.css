@@ -110,6 +110,22 @@ body.dark-mode {
     background: #e67e22;
 }
 
+.add-notice-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s;
+    font-size: 0.9rem;
+}
+
+.add-notice-btn:hover {
+    background: #229954;
+}
+
 .notice-container {
     flex: 1;
     display: flex;
@@ -675,6 +691,144 @@ body.dark-mode {
 
 .notice-form button:hover {
     background: #229954;
+}
+
+/* Form Layout */
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row select {
+    flex: 1;
+}
+
+/* Text Editor Styles */
+.text-editor {
+    border: 2px solid #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+}
+
+.dark-mode .text-editor {
+    border-color: #555;
+    background: #404040;
+}
+
+.editor-toolbar {
+    background: #f8f9fa;
+    border-bottom: 1px solid #ecf0f1;
+    padding: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.dark-mode .editor-toolbar {
+    background: #333;
+    border-bottom-color: #555;
+}
+
+.editor-btn {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.editor-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.editor-btn:active,
+.editor-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.dark-mode .editor-btn {
+    border-color: #666;
+    color: #e0e0e0;
+}
+
+.dark-mode .editor-btn:hover {
+    background: #555;
+    border-color: #777;
+}
+
+.separator {
+    color: #ddd;
+    margin: 0 0.25rem;
+    font-size: 1.2rem;
+}
+
+.dark-mode .separator {
+    color: #666;
+}
+
+.editor-content {
+    min-height: 150px;
+    padding: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    outline: none;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.editor-content:empty:before {
+    content: attr(placeholder);
+    color: #999;
+    font-style: italic;
+}
+
+.dark-mode .editor-content {
+    color: #ffffff;
+}
+
+.dark-mode .editor-content:empty:before {
+    color: #aaa;
+}
+
+/* Rich text formatting in editor */
+.editor-content b,
+.editor-content strong {
+    font-weight: bold;
+}
+
+.editor-content i,
+.editor-content em {
+    font-style: italic;
+}
+
+.editor-content u {
+    text-decoration: underline;
+}
+
+.editor-content ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.editor-content ol {
+    list-style-type: decimal;
+    margin-left: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.editor-content li {
+    margin-bottom: 0.25rem;
 }
 
 /* Login Modal */
