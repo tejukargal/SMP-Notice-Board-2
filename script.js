@@ -97,8 +97,8 @@ let editingNoticeId = null;
 
 // Built-in JSONhost sync settings - Replace with your actual values
 const BUILT_IN_SYNC = {
-    jsonHostId: 'smp-notices-2025', // Replace with your JSONhost ID
-    jsonHostToken: 'your-api-token-here', // Replace with your API token
+    jsonHostId: '790a8951ca2405bc23345a3cef5ccabb', // Replace with your JSONhost ID
+    jsonHostToken: '9y0qzr1ic6ctvqzxxp8dfv7j1s930gxz', // Replace with your API token
     autoSync: true,
     enabled: true // Set to false to disable all sync
 };
@@ -265,23 +265,57 @@ function setupEventListeners() {
     // Notice form submission
     noticeForm.addEventListener('submit', handleNoticeSubmissionWithSync);
 
-    // Touch/swipe events for mobile
+    // Enhanced touch/swipe events for mobile
     let startX = 0;
     let startY = 0;
+    let startTime = 0;
+    let isScrolling = false;
+    let touchStarted = false;
 
     noticeContainer.addEventListener('touchstart', (e) => {
+        touchStarted = true;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
-    });
+        startTime = Date.now();
+        isScrolling = false;
+        
+        // Prevent default scroll behavior during swipe
+        e.preventDefault();
+    }, { passive: false });
+
+    noticeContainer.addEventListener('touchmove', (e) => {
+        if (!touchStarted) return;
+        
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const diffX = Math.abs(currentX - startX);
+        const diffY = Math.abs(currentY - startY);
+
+        // Determine if user is scrolling vertically or swiping horizontally
+        if (diffY > diffX) {
+            isScrolling = true;
+        }
+
+        // If horizontal swipe, prevent default scrolling
+        if (diffX > diffY && diffX > 10) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 
     noticeContainer.addEventListener('touchend', (e) => {
+        if (!touchStarted) return;
+        touchStarted = false;
+
         const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
         const diffX = startX - endX;
         const diffY = startY - endY;
+        const timeDiff = Date.now() - startTime;
 
         // Only handle horizontal swipes (ignore vertical scrolling)
-        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        if (!isScrolling && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30 && timeDiff < 500) {
+            e.preventDefault();
+            
             if (diffX > 0 && currentNoticeIndex < notices.length - 1) {
                 // Swipe left - next notice
                 scrollToNotice(currentNoticeIndex + 1);
@@ -290,6 +324,34 @@ function setupEventListeners() {
                 scrollToNotice(currentNoticeIndex - 1);
             }
         }
+    });
+
+    // Mouse events for desktop swipe simulation
+    let mouseStartX = 0;
+    let isMouseDown = false;
+
+    noticeContainer.addEventListener('mousedown', (e) => {
+        isMouseDown = true;
+        mouseStartX = e.clientX;
+    });
+
+    noticeContainer.addEventListener('mouseup', (e) => {
+        if (!isMouseDown) return;
+        isMouseDown = false;
+
+        const diffX = mouseStartX - e.clientX;
+        
+        if (Math.abs(diffX) > 50) {
+            if (diffX > 0 && currentNoticeIndex < notices.length - 1) {
+                scrollToNotice(currentNoticeIndex + 1);
+            } else if (diffX < 0 && currentNoticeIndex > 0) {
+                scrollToNotice(currentNoticeIndex - 1);
+            }
+        }
+    });
+
+    noticeContainer.addEventListener('mouseleave', () => {
+        isMouseDown = false;
     });
 
     // Scroll event to update current notice
