@@ -922,10 +922,16 @@ body.dark-mode {
     
     .notice-header-right-top {
         order: 2;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
     }
     
     .notice-header-right-bottom {
         order: 1;
+        display: flex;
+        align-items: center;
     }
     
     .notice-number {
@@ -944,8 +950,14 @@ body.dark-mode {
     
     .edit-btn,
     .delete-btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        min-height: 36px;
+        min-width: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
     
     .priority-tag {
@@ -971,6 +983,16 @@ body.dark-mode {
     .close-btn {
         min-height: 44px;
         min-width: 44px;
+    }
+    
+    .edit-btn,
+    .delete-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.5rem;
+        font-size: 1rem;
+        touch-action: manipulation;
+        cursor: pointer;
     }
     
     .nav-dot {

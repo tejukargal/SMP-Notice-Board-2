@@ -317,6 +317,14 @@ function setupEventListeners() {
     let touchStarted = false;
 
     noticeContainer.addEventListener('touchstart', (e) => {
+        // Don't interfere with button clicks
+        if (e.target.classList.contains('edit-btn') || 
+            e.target.classList.contains('delete-btn') ||
+            e.target.closest('.edit-btn') ||
+            e.target.closest('.delete-btn')) {
+            return;
+        }
+        
         touchStarted = true;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
@@ -329,6 +337,14 @@ function setupEventListeners() {
 
     noticeContainer.addEventListener('touchmove', (e) => {
         if (!touchStarted) return;
+        
+        // Don't interfere with button interactions
+        if (e.target.classList.contains('edit-btn') || 
+            e.target.classList.contains('delete-btn') ||
+            e.target.closest('.edit-btn') ||
+            e.target.closest('.delete-btn')) {
+            return;
+        }
         
         const currentX = e.touches[0].clientX;
         const currentY = e.touches[0].clientY;
@@ -349,6 +365,14 @@ function setupEventListeners() {
     noticeContainer.addEventListener('touchend', (e) => {
         if (!touchStarted) return;
         touchStarted = false;
+
+        // Don't interfere with button interactions
+        if (e.target.classList.contains('edit-btn') || 
+            e.target.classList.contains('delete-btn') ||
+            e.target.closest('.edit-btn') ||
+            e.target.closest('.delete-btn')) {
+            return;
+        }
 
         const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
