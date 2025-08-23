@@ -325,20 +325,52 @@ body.dark-mode {
 
 .nav-dots {
     display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-numbers-container {
+    display: flex;
     gap: 0.5rem;
 }
 
-.nav-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.4);
-    transition: background 0.3s;
+.nav-number {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
     cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.nav-dot.active {
+.nav-number:hover {
     background: white;
+    color: #667eea;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.nav-number.active {
+    background: #667eea;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    border-color: #667eea;
+}
+
+.nav-total {
+    color: rgba(255,255,255,0.9);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .swipe-indicator {
@@ -981,13 +1013,15 @@ body.dark-mode {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0;
+    padding: 0.75rem 1rem;
+    margin: 0 0.5rem;
     background: transparent;
     color: #34495e;
     font-weight: 600;
     font-size: 0.95rem;
-    border-bottom: 2px solid #ecf0f1;
+    border-bottom: 2px solid #3498db;
     margin-bottom: 0.5rem;
+    border-radius: 4px 4px 0 0;
 }
 
 .scrolling-count {
@@ -1093,6 +1127,12 @@ body.dark-mode {
 
 .dark-mode .csv-cell-numeric {
     color: #2ecc71;
+}
+
+/* Dark mode support for new navigation */
+.dark-mode .scrolling-label {
+    color: #e0e0e0;
+    border-bottom-color: #3498db;
 }
 
 /* Mobile optimizations for scrolling window */
@@ -1252,8 +1292,36 @@ body.dark-mode {
     color: white;
 }
 
-/* Mobile Optimizations */
+/* Mobile Performance & Optimizations */
 @media (max-width: 768px) {
+    /* Enable hardware acceleration for better performance */
+    .notice-card {
+        will-change: transform;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+    
+    /* Optimize button interactions */
+    .edit-btn, .delete-btn, .nav-number {
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        touch-action: manipulation;
+    }
+    
+    /* Reduce expensive hover effects on mobile but maintain visibility */
+    .nav-number:hover {
+        transform: none;
+        background: white;
+        color: #667eea;
+    }
+    
+    /* Improve scrolling performance */
+    .notice-container {
+        -webkit-overflow-scrolling: touch;
+        overflow-scrolling: touch;
+    }
+
     .header h1 {
         font-size: 1.2rem;
     }
@@ -1372,8 +1440,13 @@ body.dark-mode {
         cursor: pointer;
     }
     
-    .nav-dot {
-        width: 12px;
-        height: 12px;
+    .nav-number {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .nav-total {
+        font-size: 0.8rem;
     }
 }

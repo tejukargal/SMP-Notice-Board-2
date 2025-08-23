@@ -565,15 +565,30 @@ function formatDate(dateString) {
     });
 }
 
-// Update navigation dots
+// Update navigation with card numbers instead of dots
 function updateNavDots() {
     navDots.innerHTML = '';
-    notices.forEach((_, index) => {
-        const dot = document.createElement('div');
-        dot.className = `nav-dot ${index === currentNoticeIndex ? 'active' : ''}`;
-        dot.addEventListener('click', () => scrollToNotice(index));
-        navDots.appendChild(dot);
+    
+    // Create card numbers container
+    const numbersContainer = document.createElement('div');
+    numbersContainer.className = 'nav-numbers-container';
+    
+    notices.forEach((notice, index) => {
+        const numberEl = document.createElement('div');
+        numberEl.className = `nav-number ${index === currentNoticeIndex ? 'active' : ''}`;
+        numberEl.textContent = `${index + 1}`;
+        numberEl.title = `Card ${index + 1}: ${notice.title}`;
+        numberEl.addEventListener('click', () => scrollToNotice(index));
+        numbersContainer.appendChild(numberEl);
     });
+    
+    // Add total count indicator
+    const totalIndicator = document.createElement('div');
+    totalIndicator.className = 'nav-total';
+    totalIndicator.textContent = `/ ${notices.length}`;
+    
+    navDots.appendChild(numbersContainer);
+    navDots.appendChild(totalIndicator);
 }
 
 // Scroll to specific notice
@@ -592,9 +607,9 @@ function scrollToNotice(index) {
 
 // Update navigation state
 function updateNavigation() {
-    const dots = document.querySelectorAll('.nav-dot');
-    dots.forEach((dot, index) => {
-        dot.classList.toggle('active', index === currentNoticeIndex);
+    const numbers = document.querySelectorAll('.nav-number');
+    numbers.forEach((number, index) => {
+        number.classList.toggle('active', index === currentNoticeIndex);
     });
 }
 
@@ -806,8 +821,8 @@ function handleLogin() {
         logoutBtn.style.display = 'block';
         adminBtn.style.display = 'none';
         
-        // Re-render cards to show edit/delete buttons
-        renderNotices();
+        // Efficiently update existing cards to show edit/delete buttons instead of full re-render
+        updateAdminButtons(true);
     } else {
         alert('Invalid admin keyword!');
         adminPassword.value = '';
@@ -926,6 +941,54 @@ function loadDarkModePreference() {
     }
 }
 
+// Efficiently update admin buttons without full re-render to prevent mobile freeze
+function updateAdminButtons(show) {
+    // Use requestAnimationFrame for smoother updates on mobile
+    requestAnimationFrame(() => {
+        const noticeCards = document.querySelectorAll('.notice-card');
+    
+    noticeCards.forEach((card, index) => {
+        const notice = notices[index];
+        if (!notice) return;
+        
+        const headerRight = card.querySelector('.notice-header-right-top');
+        if (!headerRight) return;
+        
+        // Remove existing admin buttons
+        const existingEditBtn = headerRight.querySelector('.edit-btn');
+        const existingDeleteBtn = headerRight.querySelector('.delete-btn');
+        
+        if (existingEditBtn) existingEditBtn.remove();
+        if (existingDeleteBtn) existingDeleteBtn.remove();
+        
+        // Add admin buttons if showing
+        if (show) {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-btn';
+            editBtn.title = 'Edit Notice';
+            editBtn.innerHTML = '✏️';
+            editBtn.addEventListener('click', () => editNotice(notice.id));
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.title = 'Delete Notice';
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.addEventListener('click', () => deleteNoticeWithSync(notice.id));
+            
+            // Insert before the priority tag
+            const priorityTag = headerRight.querySelector('.priority-tag');
+            if (priorityTag) {
+                headerRight.insertBefore(editBtn, priorityTag);
+                headerRight.insertBefore(deleteBtn, priorityTag);
+            } else {
+                headerRight.appendChild(editBtn);
+                headerRight.appendChild(deleteBtn);
+            }
+        }
+    });
+    }); // End requestAnimationFrame
+}
+
 // Admin logout function
 function handleLogout() {
     isAdminLoggedIn = false;
@@ -936,7 +999,8 @@ function handleLogout() {
     logoutBtn.style.display = 'none';
     adminBtn.style.display = 'block';
     
-    renderNotices(); // Re-render to remove edit buttons
+    // Efficiently update existing cards to hide edit/delete buttons instead of full re-render
+    updateAdminButtons(false);
 }
 
 // Edit notice function
