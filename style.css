@@ -890,23 +890,23 @@ body.dark-mode {
 }
 
 .messages-scroll {
-    animation: verticalScroll 15s linear infinite;
+    animation: verticalScroll 25s linear infinite;
 }
 
 .messages-scroll.slow {
-    animation-duration: 20s;
+    animation-duration: 35s;
 }
 
 .messages-scroll.normal {
-    animation-duration: 15s;
+    animation-duration: 25s;
 }
 
 .messages-scroll.fast {
-    animation-duration: 10s;
+    animation-duration: 18s;
 }
 
 .messages-scroll.very-fast {
-    animation-duration: 5s;
+    animation-duration: 12s;
 }
 
 .message-item {

@@ -492,15 +492,18 @@ function setupEventListeners() {
     noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 100));
     
     // Add window focus event to sync when switching devices
-    window.addEventListener('focus', () => {
+    window.addEventListener('focus', async () => {
         if (BUILT_IN_SYNC.enabled && BUILT_IN_SYNC.jsonHostId) {
+            console.log('Window focused - clearing CSV cache and syncing from remote...');
+            clearCSVCache(); // Clear cache to ensure fresh CSV data
             setTimeout(syncFromRemoteWithRetry, 500);
         }
     });
     
     // Add online/offline event listeners for better sync management
-    window.addEventListener('online', () => {
+    window.addEventListener('online', async () => {
         if (BUILT_IN_SYNC.enabled) {
+            console.log('Device back online - reconnecting...');
             setTimeout(testBuiltInConnection, 1000);
         }
     });
@@ -848,6 +851,7 @@ async function syncFromRemoteWithRetry(retries = 3) {
     for (let i = 0; i < retries; i++) {
         try {
             await syncFromRemote();
+            console.log('Sync from remote completed successfully');
             return; // Success, exit retry loop
         } catch (error) {
             console.warn(`Sync attempt ${i + 1} failed:`, error);
@@ -857,7 +861,7 @@ async function syncFromRemoteWithRetry(retries = 3) {
             }
         }
     }
-    console.error('All sync attempts failed');
+    console.error('All sync attempts failed - using local data');
 }
 
 
@@ -867,14 +871,27 @@ async function syncToRemote() {
         throw new Error('Sync not configured');
     }
 
+    // Create a copy of notices with scrolling message metadata (but not the actual messages)
+    const noticesToSync = notices.map(notice => ({
+        ...notice,
+        scrollingMessages: notice.scrollingMessages ? {
+            enabled: notice.scrollingMessages.enabled,
+            title: notice.scrollingMessages.title,
+            csvFileName: notice.scrollingMessages.csvFileName,
+            speed: notice.scrollingMessages.speed,
+            // Don't sync the actual messages array - they will be loaded from CSV on each device
+            messages: []
+        } : undefined
+    }));
+
     const syncData = {
-        notices: notices,
+        notices: noticesToSync,
         lastModified: new Date().toISOString(),
-        version: '1.0'
+        version: '1.1' // Increment version to indicate support for scrolling messages
     };
 
     await makeJsonHostRequest('POST', `/json/${BUILT_IN_SYNC.jsonHostId}`, syncData, true);
-    console.log('Synced to remote successfully');
+    console.log('Synced to remote successfully with scrolling message metadata');
 }
 
 // Sync notices from JSONhost
@@ -888,10 +905,26 @@ async function syncFromRemote() {
         
         if (remoteData && remoteData.notices) {
             notices = remoteData.notices;
+            
+            // Reload scrolling messages for all notices that have them enabled
+            console.log('Loading scrolling messages after sync...');
+            for (const notice of notices) {
+                if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
+                    try {
+                        console.log(`Loading messages for notice ${notice.id} from ${notice.scrollingMessages.csvFileName}`);
+                        notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName, true); // Force reload
+                        console.log(`Loaded ${notice.scrollingMessages.messages.length} messages for notice ${notice.id}`);
+                    } catch (csvError) {
+                        console.warn(`Failed to load CSV messages for notice ${notice.id}:`, csvError);
+                        notice.scrollingMessages.messages = [];
+                    }
+                }
+            }
+            
             saveLocalNotices();
             renderNotices();
             updateNavigation();
-            console.log('Synced from remote successfully');
+            console.log('Synced from remote successfully with scrolling messages');
         }
     } catch (error) {
         console.error('Sync from remote failed:', error);
@@ -914,8 +947,13 @@ function setupAutoSync() {
         // Auto-sync every 2 minutes with improved error handling
         autoSyncInterval = setInterval(async () => {
             try {
+                // First sync to remote (push local changes)
                 await syncToRemote();
                 updateSyncStatus('connected', `Last synced: ${new Date().toLocaleTimeString()}`);
+                
+                // Then sync from remote to get any new changes from other devices
+                await syncFromRemote();
+                console.log('Auto-sync cycle completed successfully');
             } catch (error) {
                 console.error('Auto-sync failed:', error);
                 // Try to sync from remote to get latest data
@@ -1066,18 +1104,32 @@ function loadScrollingMessagesSettings() {
     // But we keep it for compatibility during the init process
 }
 
-async function loadCSVMessages(csvFileName) {
+async function loadCSVMessages(csvFileName, forceReload = false) {
     if (!csvFileName) return [];
     
-    // Check cache first
-    if (csvMessagesCache[csvFileName]) {
+    // Check cache first (unless forcing reload)
+    if (!forceReload && csvMessagesCache[csvFileName]) {
+        console.log(`Using cached messages for ${csvFileName}`);
         return csvMessagesCache[csvFileName];
     }
     
+    console.log(`Loading CSV messages from ${csvFileName}...`);
     // Load and cache messages
     const messages = await parseCSVFile(csvFileName);
     csvMessagesCache[csvFileName] = messages;
+    console.log(`Loaded ${messages.length} messages from ${csvFileName}`);
     return messages;
+}
+
+// Clear CSV cache to force fresh data loading
+function clearCSVCache(csvFileName = null) {
+    if (csvFileName) {
+        delete csvMessagesCache[csvFileName];
+        console.log(`Cleared cache for ${csvFileName}`);
+    } else {
+        csvMessagesCache = {};
+        console.log('Cleared all CSV cache');
+    }
 }
 
 async function updateNoticeScrollingMessages(noticeId) {
