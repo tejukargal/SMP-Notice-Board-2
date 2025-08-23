@@ -2,6 +2,16 @@
 // Global CSV messages cache
 let csvMessagesCache = {};
 
+// Common CSV files to preload at startup
+const STARTUP_CSV_FILES = ['students.csv'];
+
+// Track CSV loading status
+let csvLoadingStatus = {
+    loaded: false,
+    files: {},
+    promises: {}
+};
+
 let notices = [
     {
         id: 1,
@@ -175,26 +185,31 @@ async function init() {
     loadScrollingMessagesSettings();
     
     // Load scrolling messages for notices that have them enabled
-    console.log('Loading scrolling messages during initialization...');
-    const loadPromises = [];
+    console.log('Setting up scrolling messages during initialization...');
     
     for (const notice of notices) {
         if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
-            // Start loading in background
-            const loadPromise = loadCSVMessages(notice.scrollingMessages.csvFileName).then(messages => {
-                console.log(`Loaded ${messages.length} messages for notice ${notice.id} during init`);
-                notice.scrollingMessages.messages = messages;
-                // Update just this notice's scrolling messages without full re-render
-                updateScrollingMessagesDisplay(notice);
-            }).catch(csvError => {
-                console.warn(`Failed to load CSV messages for notice ${notice.id} during init:`, csvError);
-                notice.scrollingMessages.messages = [];
-            });
-            loadPromises.push(loadPromise);
+            // Check if data is already preloaded
+            if (csvMessagesCache[notice.scrollingMessages.csvFileName]) {
+                console.log(`✅ Using preloaded data for notice ${notice.id}: ${csvMessagesCache[notice.scrollingMessages.csvFileName].length} messages`);
+                notice.scrollingMessages.messages = csvMessagesCache[notice.scrollingMessages.csvFileName];
+            } else if (STARTUP_CSV_FILES.includes(notice.scrollingMessages.csvFileName)) {
+                // Mark for loading and will be updated after preload completes
+                console.log(`⏳ Marking notice ${notice.id} for CSV update after preload`);
+                notice.scrollingMessages.messages = []; // Temporary empty array
+            } else {
+                // Load non-startup CSV files in background
+                console.log(`📂 Loading custom CSV for notice ${notice.id}`);
+                loadCSVMessages(notice.scrollingMessages.csvFileName).then(messages => {
+                    notice.scrollingMessages.messages = messages;
+                    updateScrollingMessagesDisplay(notice);
+                }).catch(csvError => {
+                    console.warn(`Failed to load CSV messages for notice ${notice.id}:`, csvError);
+                    notice.scrollingMessages.messages = [];
+                });
+            }
         }
     }
-    
-    // Don't wait for CSV loading to complete before rendering
     
     renderNotices();
     setupEventListeners();
@@ -1052,10 +1067,96 @@ function saveLocalNotices() {
     localStorage.setItem('smpNotices', JSON.stringify(notices));
 }
 
+// Preload CSV files at startup for instant access
+async function preloadCSVFiles() {
+    console.log('🚀 Starting CSV preload process...');
+    
+    // Automatically add CSV files used by notices to the startup list
+    const csvFilesFromNotices = new Set(STARTUP_CSV_FILES);
+    for (const notice of notices) {
+        if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
+            csvFilesFromNotices.add(notice.scrollingMessages.csvFileName);
+        }
+    }
+    
+    const filesToLoad = Array.from(csvFilesFromNotices);
+    console.log(`📋 Files to preload: ${filesToLoad.join(', ')}`);
+    
+    const loadPromises = [];
+    
+    for (const fileName of filesToLoad) {
+        console.log(`Starting preload of ${fileName}...`);
+        const loadPromise = parseCSVFile(fileName).then(messages => {
+            csvMessagesCache[fileName] = messages;
+            csvLoadingStatus.files[fileName] = 'loaded';
+            console.log(`✅ Preloaded ${fileName}: ${messages.length} messages`);
+            return { fileName, messages };
+        }).catch(error => {
+            csvLoadingStatus.files[fileName] = 'error';
+            console.warn(`❌ Failed to preload ${fileName}:`, error);
+            return { fileName, messages: [], error };
+        });
+        
+        csvLoadingStatus.promises[fileName] = loadPromise;
+        loadPromises.push(loadPromise);
+    }
+    
+    // Wait for all CSV files to load
+    try {
+        console.log(`⏳ Loading ${loadPromises.length} CSV files...`);
+        const results = await Promise.all(loadPromises);
+        csvLoadingStatus.loaded = true;
+        
+        const totalMessages = results.reduce((sum, result) => sum + (result.messages?.length || 0), 0);
+        const successCount = results.filter(r => !r.error).length;
+        
+        console.log(`🎉 CSV preloading complete! ${successCount}/${filesToLoad.length} files loaded successfully`);
+        console.log(`📊 Total messages available: ${totalMessages}`);
+        
+        return results;
+    } catch (error) {
+        console.error('❌ Error during CSV preloading:', error);
+        csvLoadingStatus.loaded = true; // Mark as complete even if some failed
+        return [];
+    }
+}
+
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
     loadLocalNotices();
+    
+    // Start CSV preloading immediately
+    const csvPreloadPromise = preloadCSVFiles();
+    
+    // Initialize app (don't wait for CSV preloading)
     await init();
+    
+    // Ensure CSV preloading is complete and update any notices that need it
+    await csvPreloadPromise;
+    console.log('🔄 CSV preloading completed, updating notices with preloaded data...');
+    
+    // Update notices that were waiting for preloaded CSV data
+    let updatedNotices = 0;
+    for (const notice of notices) {
+        if (notice.scrollingMessages && notice.scrollingMessages.enabled && 
+            notice.scrollingMessages.csvFileName && 
+            STARTUP_CSV_FILES.includes(notice.scrollingMessages.csvFileName)) {
+            
+            if (csvMessagesCache[notice.scrollingMessages.csvFileName]) {
+                notice.scrollingMessages.messages = csvMessagesCache[notice.scrollingMessages.csvFileName];
+                console.log(`📝 Updated notice ${notice.id} with ${notice.scrollingMessages.messages.length} preloaded messages`);
+                updatedNotices++;
+            }
+        }
+    }
+    
+    if (updatedNotices > 0) {
+        console.log(`✨ Updated ${updatedNotices} notices with preloaded CSV data, re-rendering...`);
+        renderNotices();
+        saveLocalNotices();
+    } else {
+        console.log('ℹ️  No notices needed CSV data updates');
+    }
 });
 
 // CSV Parsing and Scrolling Messages Functions
@@ -1174,13 +1275,24 @@ function loadScrollingMessagesSettings() {
 async function loadCSVMessages(csvFileName, forceReload = false) {
     if (!csvFileName) return [];
     
-    // Check cache first (unless forcing reload)
+    // Check if it's a startup CSV file and is already loaded
     if (!forceReload && csvMessagesCache[csvFileName]) {
-        console.log(`Using cached messages for ${csvFileName}`);
+        console.log(`✅ Using preloaded/cached messages for ${csvFileName}: ${csvMessagesCache[csvFileName].length} entries`);
         return csvMessagesCache[csvFileName];
     }
     
-    console.log(`Loading CSV messages from ${csvFileName}...`);
+    // If it's a startup CSV file and currently loading, wait for it
+    if (STARTUP_CSV_FILES.includes(csvFileName) && csvLoadingStatus.promises[csvFileName]) {
+        console.log(`⏳ Waiting for preload of ${csvFileName}...`);
+        try {
+            const result = await csvLoadingStatus.promises[csvFileName];
+            return result.messages || [];
+        } catch (error) {
+            console.warn(`Failed to wait for preload of ${csvFileName}:`, error);
+        }
+    }
+    
+    console.log(`📂 Loading CSV messages from ${csvFileName}...`);
     // Load and cache messages
     const messages = await parseCSVFile(csvFileName);
     csvMessagesCache[csvFileName] = messages;
