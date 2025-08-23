@@ -176,18 +176,25 @@ async function init() {
     
     // Load scrolling messages for notices that have them enabled
     console.log('Loading scrolling messages during initialization...');
+    const loadPromises = [];
+    
     for (const notice of notices) {
         if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
-            try {
-                console.log(`Loading messages for notice ${notice.id} from ${notice.scrollingMessages.csvFileName}`);
-                notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName);
-                console.log(`Loaded ${notice.scrollingMessages.messages.length} messages for notice ${notice.id} during init`);
-            } catch (csvError) {
+            // Start loading in background
+            const loadPromise = loadCSVMessages(notice.scrollingMessages.csvFileName).then(messages => {
+                console.log(`Loaded ${messages.length} messages for notice ${notice.id} during init`);
+                notice.scrollingMessages.messages = messages;
+                // Update just this notice's scrolling messages without full re-render
+                updateScrollingMessagesDisplay(notice);
+            }).catch(csvError => {
                 console.warn(`Failed to load CSV messages for notice ${notice.id} during init:`, csvError);
                 notice.scrollingMessages.messages = [];
-            }
+            });
+            loadPromises.push(loadPromise);
         }
     }
+    
+    // Don't wait for CSV loading to complete before rendering
     
     renderNotices();
     setupEventListeners();
@@ -263,7 +270,7 @@ function createNoticeCard(notice, index) {
                 <span class="category-tag">${notice.category}</span>
             </div>
             <div class="notice-content">${notice.content}</div>
-            ${notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.messages.length > 0 ? 
+            ${notice.scrollingMessages && notice.scrollingMessages.enabled ? 
                 createScrollingMessagesHTML(notice.scrollingMessages.title, notice.scrollingMessages.messages, notice.scrollingMessages.speed) : ''}
             ${notice.link ? `<a href="${notice.link}" target="_blank" class="notice-link">View Link</a>` : ''}
         </div>
@@ -1100,40 +1107,63 @@ function parseCSVText(csvText) {
     return messages;
 }
 
-function createScrollingMessagesHTML(title, messages, speed = 'normal') {
-    if (!messages || messages.length === 0) return '';
+function createScrollingMessagesHTML(title, messages, speed = 'auto') {
+    if (!messages || messages.length === 0) {
+        // Return placeholder even when no messages to show title and container
+        return `
+            <div class="scrolling-messages">
+                <h4>${title || 'Scrolling Messages'} (Loading...)</h4>
+                <div class="messages-container">
+                    <div class="messages-scroll">
+                        <div class="message-item">Loading messages...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     
     const messagesHTML = messages.map(message => 
         `<div class="message-item">${message}</div>`
     ).join('');
     
-    // Calculate dynamic speed based on message count for better readability
     const messageCount = messages.length;
-    let dynamicSpeed = speed;
     
-    // Auto-adjust speed for large datasets
-    if (messageCount > 500) {
-        dynamicSpeed = 'ultra-slow';
-    } else if (messageCount > 200) {
-        dynamicSpeed = 'very-slow';
-    } else if (messageCount > 100) {
-        dynamicSpeed = 'slow';
+    // Calculate duration for 3 rows per second (readable speed) - this is our baseline
+    // Since we duplicate messages, total visible rows = messageCount * 2
+    // At 3 rows/second: duration = (messageCount * 2) / 3
+    let baseDuration = Math.max(20, Math.round((messageCount * 2) / 3)); // Minimum 20 seconds
+    
+    // Apply speed multipliers based on user selection
+    let finalDuration = baseDuration;
+    switch(speed) {
+        case 'ultra-slow': finalDuration = baseDuration * 4; break;  // 4x slower
+        case 'very-slow': finalDuration = baseDuration * 3; break;   // 3x slower
+        case 'slow': finalDuration = baseDuration * 2; break;        // 2x slower
+        case 'normal': finalDuration = Math.round(baseDuration / 1.5); break; // 1.5x faster
+        case 'fast': finalDuration = Math.round(baseDuration / 2); break;      // 2x faster
+        case 'very-fast': finalDuration = Math.round(baseDuration / 3); break; // 3x faster
+        default: finalDuration = baseDuration; // 3 rows/second (recommended)
     }
+    
+    const calculatedDuration = Math.max(10, finalDuration); // Absolute minimum 10 seconds
     
     // Generate unique ID for this scrolling container
     const containerId = `scroll-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    return `
+    const html = `
         <div class="scrolling-messages">
             <h4>${title || 'Scrolling Messages'} (${messageCount} entries)</h4>
             <div class="messages-container">
-                <div class="messages-scroll ${dynamicSpeed}" id="${containerId}" data-message-count="${messageCount}">
+                <div class="messages-scroll" id="${containerId}" data-message-count="${messageCount}" style="animation-duration: ${calculatedDuration}s;">
                     ${messagesHTML}
                     ${messagesHTML} <!-- Duplicate for seamless scrolling -->
                 </div>
             </div>
         </div>
     `;
+    
+    console.log(`Created scrolling messages with ${messageCount} entries, duration: ${calculatedDuration}s (3 rows/sec)`);
+    return html;
 }
 
 function loadScrollingMessagesSettings() {
@@ -1167,6 +1197,33 @@ function clearCSVCache(csvFileName = null) {
         csvMessagesCache = {};
         console.log('Cleared all CSV cache');
     }
+}
+
+// Update scrolling messages display for a specific notice without full re-render
+function updateScrollingMessagesDisplay(notice) {
+    if (!notice.scrollingMessages || !notice.scrollingMessages.enabled) return;
+    
+    // Find all notice cards and update the one with matching notice ID
+    const noticeCards = document.querySelectorAll('.notice-card');
+    noticeCards.forEach(card => {
+        const noticeTitle = card.querySelector('.notice-title');
+        if (noticeTitle && noticeTitle.textContent === notice.title) {
+            const scrollingContainer = card.querySelector('.scrolling-messages');
+            if (scrollingContainer) {
+                // Replace the existing scrolling messages with updated content
+                const newHTML = createScrollingMessagesHTML(
+                    notice.scrollingMessages.title, 
+                    notice.scrollingMessages.messages, 
+                    notice.scrollingMessages.speed
+                );
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = newHTML;
+                const newScrollingContainer = tempDiv.firstElementChild;
+                scrollingContainer.parentNode.replaceChild(newScrollingContainer, scrollingContainer);
+                console.log(`Updated scrolling messages display for notice: ${notice.title}`);
+            }
+        }
+    });
 }
 
 async function updateNoticeScrollingMessages(noticeId) {
