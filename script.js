@@ -164,13 +164,26 @@ async function init() {
     
     // Initialize with demo scrolling notice if no notices exist
     if (notices.length === 0) {
+        console.log('📝 No notices found, creating demo notice with scrolling');
         createDemoScrollingNotice();
     } else {
         // Check if we have any scrolling notices, if not create one for testing
         const hasScrollingNotice = notices.some(notice => notice.scrollingEnabled);
+        console.log(`🔍 Existing notices: ${notices.length}, Has scrolling notice: ${hasScrollingNotice}`);
+        
         if (!hasScrollingNotice) {
-            console.log('No scrolling notices found, creating demo scrolling notice');
-            createDemoScrollingNotice();
+            console.log('❌ No scrolling notices found, enabling scrolling for first notice');
+            // Enable scrolling for the first notice as a demo
+            if (notices.length > 0) {
+                notices[0].scrollingEnabled = true;
+                notices[0].scrollingLabel = 'Student Fee Dues List';
+                notices[0].scrollingSpeed = 'medium';
+                notices[0].order = 1;
+                console.log(`✅ Enabled scrolling for notice: "${notices[0].title}"`);
+                saveLocalNotices(); // Save the updated notice
+            }
+        } else {
+            console.log('✅ Found existing scrolling notices');
         }
     }
     
@@ -215,7 +228,7 @@ function createDemoScrollingNotice() {
 
 // Load all available CSV files at startup - following reference implementation
 async function loadAllCSVFiles() {
-    console.log('Loading CSV files at startup...');
+    console.log('🔍 Loading CSV files at startup...');
     
     // Try to load common CSV files
     const csvFiles = ['students.csv', '1.csv', '2.csv', '3.csv', '4.csv', '5.csv'];
@@ -227,15 +240,16 @@ async function loadAllCSVFiles() {
                 // Store raw CSV text for processing
                 csvData[fileName] = csvText;
                 const lineCount = csvText.trim().split('\n').length;
-                console.log(`Loaded CSV file ${fileName} with ${lineCount} lines`);
+                console.log(`✅ Loaded CSV file ${fileName} with ${lineCount} lines`);
             }
         } catch (error) {
             // File doesn't exist or error loading, skip silently
-            console.log(`CSV file ${fileName} not found or error loading`);
+            console.log(`❌ CSV file ${fileName} not found or error loading:`, error.message);
         }
     }
     
-    console.log(`Loaded ${Object.keys(csvData).length} CSV files`);
+    console.log(`📊 Loaded ${Object.keys(csvData).length} CSV files:`, Object.keys(csvData));
+    console.log(`📋 CSV data available:`, csvData);
 }
 
 // Fetch CSV file content
@@ -250,6 +264,29 @@ async function fetchCSVFile(fileName) {
         console.log(`Error fetching ${fileName}:`, error);
         return null;
     }
+}
+
+// Get CSV data for a notice based on its order - following reference implementation
+function getCSVDataForNotice(notice) {
+    const order = notice.order || 1;
+    
+    // Try different file naming patterns
+    const possibleFiles = [
+        `${order}.csv`,           // 1.csv, 2.csv, etc.
+        'students.csv',           // Default fallback
+        `data${order}.csv`,       // data1.csv, data2.csv
+        `file${order}.csv`        // file1.csv, file2.csv
+    ];
+    
+    for (const fileName of possibleFiles) {
+        if (csvData[fileName]) {
+            console.log(`📁 Using ${fileName} for notice "${notice.title}" (order: ${order})`);
+            return csvData[fileName];
+        }
+    }
+    
+    console.log(`❌ No CSV data found for notice "${notice.title}" (order: ${order})`);
+    return '';
 }
 
 // Get scroll speed multiplier - following reference implementation
@@ -273,10 +310,21 @@ function calculateOptimalScrollSpeed(rowCount) {
 
 // Create scrolling text HTML - following reference implementation
 function createScrollingTextHTML(csvText, label, speed = 'medium') {
+    console.log(`🎨 Creating scrolling text for label: "${label}", CSV length: ${csvText ? csvText.length : 0}, speed: ${speed}`);
+    
     try {
+        // Check if we have CSV data
+        if (!csvText || csvText.trim().length === 0) {
+            console.log(`⚠️ No CSV data available for label: "${label}"`);
+            return createEmptyScrollingMessage(label);
+        }
+        
         // Parse CSV text properly
         const lines = csvText.trim().split('\n').filter(line => line.trim());
+        console.log(`📝 Processing ${lines.length} CSV lines`);
+        
         if (lines.length < 2) {
+            console.log(`❌ Insufficient CSV data (${lines.length} lines) for label: "${label}"`);
             return createEmptyScrollingMessage(label);
         }
 
@@ -328,6 +376,8 @@ function createScrollingTextHTML(csvText, label, speed = 'medium') {
         // Generate unique ID for this scrolling instance
         const instanceId = `csv-scroll-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+        console.log(`✅ Generated scrolling HTML for "${label}" with ${totalRows} rows, duration: ${animationDuration}s`);
+
         return `
             <div class="scrolling-message-inline" id="${instanceId}" data-rows="${totalRows}">
                 <div class="scrolling-label">
@@ -361,8 +411,8 @@ function createEmptyScrollingMessage(label) {
                 <div>${escapeHtml(label)}</div>
                 <span class="scrolling-count">(No data)</span>
             </div>
-            <div class="scrolling-content">
-                <p style="color: #999; font-style: italic;">No data available</p>
+            <div class="scrolling-content-area" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                <p style="color: #7f8c8d; font-style: italic; margin: 0;">Loading CSV data...</p>
             </div>
         </div>
     `;
@@ -453,6 +503,8 @@ function renderNotices() {
 
 // Create individual notice card
 function createNoticeCard(notice, index) {
+    console.log(`📋 Creating card for notice: "${notice.title}", scrollingEnabled: ${notice.scrollingEnabled}, scrollingLabel: "${notice.scrollingLabel}"`);
+    
     const card = document.createElement('div');
     card.className = 'notice-card';
     card.innerHTML = `
@@ -480,8 +532,8 @@ function createNoticeCard(notice, index) {
                 <span class="category-tag">${notice.category}</span>
             </div>
             <div class="notice-content">${notice.content}</div>
-            ${notice.scrollingEnabled && notice.scrollingLabel && csvData['students.csv'] ? 
-                createScrollingTextHTML(csvData['students.csv'], notice.scrollingLabel, notice.scrollingSpeed) : ''}
+            ${notice.scrollingEnabled && notice.scrollingLabel ? 
+                createScrollingTextHTML(getCSVDataForNotice(notice), notice.scrollingLabel, notice.scrollingSpeed) : ''}
             ${notice.link ? `<a href="${notice.link}" target="_blank" class="notice-link">View Link</a>` : ''}
         </div>
     `;
