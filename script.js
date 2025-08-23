@@ -1,4 +1,7 @@
 // Sample notices data
+// Global CSV messages cache
+let csvMessagesCache = {};
+
 let notices = [
     {
         id: 1,
@@ -9,7 +12,14 @@ let notices = [
         importance: "Critical",
         category: "Notice",
         date: "2025-08-20",
-        link: ""
+        link: "",
+        scrollingMessages: {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        }
     },
     {
         id: 2,
@@ -20,7 +30,14 @@ let notices = [
         importance: "Urgent",
         category: "Notice",
         date: "2025-08-18",
-        link: ""
+        link: "",
+        scrollingMessages: {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        }
     },
     {
         id: 3,
@@ -31,7 +48,14 @@ let notices = [
         importance: "Important",
         category: "Notice",
         date: "2025-08-17",
-        link: ""
+        link: "",
+        scrollingMessages: {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        }
     },
     {
         id: 4,
@@ -42,7 +66,14 @@ let notices = [
         importance: "Urgent",
         category: "Memo",
         date: "2025-08-15",
-        link: "https://scholarship.gov.in"
+        link: "https://scholarship.gov.in",
+        scrollingMessages: {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        }
     },
     {
         id: 5,
@@ -53,7 +84,14 @@ let notices = [
         importance: "Normal",
         category: "Result",
         date: "2025-08-14",
-        link: ""
+        link: "",
+        scrollingMessages: {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        }
     },
     {
         id: 6,
@@ -64,7 +102,14 @@ let notices = [
         importance: "Important",
         category: "Notice",
         date: "2025-08-12",
-        link: ""
+        link: "",
+        scrollingMessages: {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        }
     },
     {
         id: 7,
@@ -75,7 +120,14 @@ let notices = [
         importance: "Normal",
         category: "Memo",
         date: "2025-08-10",
-        link: ""
+        link: "",
+        scrollingMessages: {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        }
     }
 ];
 
@@ -118,8 +170,17 @@ const BUILT_IN_SYNC = {
 let autoSyncInterval = null;
 
 // Initialize the app
-function init() {
+async function init() {
     loadDarkModePreference();
+    loadScrollingMessagesSettings();
+    
+    // Load scrolling messages for notices that have them enabled
+    for (const notice of notices) {
+        if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
+            notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName);
+        }
+    }
+    
     renderNotices();
     setupEventListeners();
     updateNavigation();
@@ -194,6 +255,8 @@ function createNoticeCard(notice, index) {
                 <span class="category-tag">${notice.category}</span>
             </div>
             <div class="notice-content">${notice.content}</div>
+            ${notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.messages.length > 0 ? 
+                createScrollingMessagesHTML(notice.scrollingMessages.title, notice.scrollingMessages.messages, notice.scrollingMessages.speed) : ''}
             ${notice.link ? `<a href="${notice.link}" target="_blank" class="notice-link">View Link</a>` : ''}
         </div>
     `;
@@ -308,6 +371,9 @@ function setupEventListeners() {
 
     // Notice form submission
     noticeForm.addEventListener('submit', handleNoticeSubmissionWithSync);
+    
+    // Scrolling messages settings are now handled per-notice
+    // No global event listeners needed
 
     // Enhanced touch/swipe events for mobile
     let startX = 0;
@@ -424,6 +490,20 @@ function setupEventListeners() {
 
     // Scroll event to update current notice
     noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 100));
+    
+    // Add window focus event to sync when switching devices
+    window.addEventListener('focus', () => {
+        if (BUILT_IN_SYNC.enabled && BUILT_IN_SYNC.jsonHostId) {
+            setTimeout(syncFromRemoteWithRetry, 500);
+        }
+    });
+    
+    // Add online/offline event listeners for better sync management
+    window.addEventListener('online', () => {
+        if (BUILT_IN_SYNC.enabled) {
+            setTimeout(testBuiltInConnection, 1000);
+        }
+    });
 }
 
 // Handle admin login
@@ -448,7 +528,7 @@ function handleLogin() {
 }
 
 // Handle notice form submission
-function handleNoticeSubmission(e) {
+async function handleNoticeSubmission(e) {
     e.preventDefault();
     
     if (editingNoticeId) {
@@ -465,6 +545,8 @@ function handleNoticeSubmission(e) {
                 category: document.getElementById('noticeCategory').value,
                 link: document.getElementById('noticeLink').value || ''
             };
+            // Update scrolling messages for this notice
+            await updateNoticeScrollingMessages(editingNoticeId);
         }
         editingNoticeId = null;
         submitBtn.textContent = 'Add Notice';
@@ -479,9 +561,18 @@ function handleNoticeSubmission(e) {
             importance: noticeImportance.value,
             category: document.getElementById('noticeCategory').value,
             date: new Date().toISOString().split('T')[0],
-            link: document.getElementById('noticeLink').value || ''
+            link: document.getElementById('noticeLink').value || '',
+            scrollingMessages: {
+                enabled: false,
+                title: '',
+                csvFileName: '',
+                speed: 'normal',
+                messages: []
+            }
         };
         notices.push(newNotice);
+        // Update scrolling messages for the new notice
+        await updateNoticeScrollingMessages(newNotice.id);
     }
 
     saveLocalNotices();
@@ -573,6 +664,10 @@ function editNotice(noticeId) {
         noticeImportance.value = notice.importance || 'Normal';
         document.getElementById('noticeCategory').value = notice.category;
         document.getElementById('noticeLink').value = notice.link || '';
+        
+        // Load scrolling message settings for this notice
+        loadNoticeScrollingSettings(notice);
+        
         submitBtn.textContent = 'Update Notice';
         adminPanel.style.display = 'flex';
     }
@@ -599,6 +694,17 @@ function resetNoticeForm() {
     submitBtn.textContent = 'Add Notice';
     noticeForm.reset();
     noticeContent.innerHTML = '';
+    
+    // Reset scrolling messages fields
+    const enableCheckbox = document.getElementById('enableScrollingMessages');
+    const titleInput = document.getElementById('scrollingTitle');
+    const csvFileInput = document.getElementById('csvFileName');
+    const speedSelect = document.getElementById('scrollingSpeed');
+    
+    if (enableCheckbox) enableCheckbox.checked = false;
+    if (titleInput) titleInput.value = '';
+    if (csvFileInput) csvFileInput.value = '';
+    if (speedSelect) speedSelect.value = '';
 }
 
 // Setup rich text editor
@@ -727,12 +833,31 @@ async function testBuiltInConnection() {
         await makeJsonHostRequest('GET', `/json/${BUILT_IN_SYNC.jsonHostId}`);
         updateSyncStatus('connected', 'Auto-sync enabled');
         
-        // Try to sync from remote on startup
-        setTimeout(syncFromRemote, 1000);
+        // Try to sync from remote on startup with retry logic
+        setTimeout(syncFromRemoteWithRetry, 1000);
     } catch (error) {
         updateSyncStatus('error', `Connection failed: ${error.message}`);
         console.error('Built-in sync connection failed:', error);
+        // Retry connection after 30 seconds
+        setTimeout(testBuiltInConnection, 30000);
     }
+}
+
+// Sync from remote with retry logic
+async function syncFromRemoteWithRetry(retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            await syncFromRemote();
+            return; // Success, exit retry loop
+        } catch (error) {
+            console.warn(`Sync attempt ${i + 1} failed:`, error);
+            if (i < retries - 1) {
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+            }
+        }
+    }
+    console.error('All sync attempts failed');
 }
 
 
@@ -786,16 +911,23 @@ function setupAutoSync() {
     }
 
     if (BUILT_IN_SYNC.enabled && BUILT_IN_SYNC.autoSync && BUILT_IN_SYNC.jsonHostId && BUILT_IN_SYNC.jsonHostToken) {
-        // Auto-sync every 3 minutes
+        // Auto-sync every 2 minutes with improved error handling
         autoSyncInterval = setInterval(async () => {
             try {
                 await syncToRemote();
                 updateSyncStatus('connected', `Last synced: ${new Date().toLocaleTimeString()}`);
             } catch (error) {
                 console.error('Auto-sync failed:', error);
-                // Don't show error in UI, just log it
+                // Try to sync from remote to get latest data
+                try {
+                    await syncFromRemote();
+                    updateSyncStatus('connected', `Synced from remote: ${new Date().toLocaleTimeString()}`);
+                } catch (syncError) {
+                    console.error('Fallback sync from remote also failed:', syncError);
+                    updateSyncStatus('error', 'Sync issues detected');
+                }
             }
-        }, 3 * 60 * 1000);
+        }, 2 * 60 * 1000);
     }
 }
 
@@ -844,6 +976,19 @@ function loadLocalNotices() {
     const saved = localStorage.getItem('smpNotices');
     if (saved) {
         notices = JSON.parse(saved);
+        // Ensure backward compatibility - add scrollingMessages to existing notices
+        notices.forEach(notice => {
+            if (!notice.scrollingMessages) {
+                notice.scrollingMessages = {
+                    enabled: false,
+                    title: '',
+                    csvFileName: '',
+                    speed: 'normal',
+                    messages: []
+                };
+            }
+        });
+        saveLocalNotices(); // Save updated structure
     }
 }
 
@@ -853,10 +998,143 @@ function saveLocalNotices() {
 }
 
 // Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     loadLocalNotices();
-    init();
+    await init();
 });
+
+// CSV Parsing and Scrolling Messages Functions
+async function parseCSVFile(fileName) {
+    try {
+        const response = await fetch(fileName);
+        if (!response.ok) {
+            throw new Error(`Could not fetch ${fileName}`);
+        }
+        const csvText = await response.text();
+        return parseCSVText(csvText);
+    } catch (error) {
+        console.error('Error parsing CSV file:', error);
+        return [];
+    }
+}
+
+function parseCSVText(csvText) {
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim());
+    const messages = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const row = {};
+        
+        headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+        });
+        
+        // Create a formatted message from the row data
+        const message = `${row[headers[1]] || 'N/A'} - ${row[headers[2]] || ''} ${row[headers[3]] || ''} - Fee Dues: ${row[headers[5]] || '0'}`;
+        messages.push(message);
+    }
+    
+    return messages;
+}
+
+function createScrollingMessagesHTML(title, messages, speed = 'normal') {
+    if (!messages || messages.length === 0) return '';
+    
+    const messagesHTML = messages.map(message => 
+        `<div class="message-item">${message}</div>`
+    ).join('');
+    
+    return `
+        <div class="scrolling-messages">
+            <h4>${title || 'Scrolling Messages'}</h4>
+            <div class="messages-container">
+                <div class="messages-scroll ${speed}">
+                    ${messagesHTML}
+                    ${messagesHTML} <!-- Duplicate for seamless scrolling -->
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function loadScrollingMessagesSettings() {
+    // This function is no longer needed as settings are per-notice
+    // But we keep it for compatibility during the init process
+}
+
+async function loadCSVMessages(csvFileName) {
+    if (!csvFileName) return [];
+    
+    // Check cache first
+    if (csvMessagesCache[csvFileName]) {
+        return csvMessagesCache[csvFileName];
+    }
+    
+    // Load and cache messages
+    const messages = await parseCSVFile(csvFileName);
+    csvMessagesCache[csvFileName] = messages;
+    return messages;
+}
+
+async function updateNoticeScrollingMessages(noticeId) {
+    const enableCheckbox = document.getElementById('enableScrollingMessages');
+    const titleInput = document.getElementById('scrollingTitle');
+    const csvFileInput = document.getElementById('csvFileName');
+    const speedSelect = document.getElementById('scrollingSpeed');
+    
+    const notice = notices.find(n => n.id === noticeId);
+    if (!notice) return;
+    
+    // Initialize scrollingMessages if it doesn't exist
+    if (!notice.scrollingMessages) {
+        notice.scrollingMessages = {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        };
+    }
+    
+    notice.scrollingMessages.enabled = enableCheckbox.checked;
+    notice.scrollingMessages.title = titleInput.value;
+    notice.scrollingMessages.csvFileName = csvFileInput.value;
+    notice.scrollingMessages.speed = speedSelect.value || 'normal';
+    
+    if (notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
+        notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName);
+    } else {
+        notice.scrollingMessages.messages = [];
+    }
+    
+    saveLocalNotices();
+}
+
+function loadNoticeScrollingSettings(notice) {
+    const enableCheckbox = document.getElementById('enableScrollingMessages');
+    const titleInput = document.getElementById('scrollingTitle');
+    const csvFileInput = document.getElementById('csvFileName');
+    const speedSelect = document.getElementById('scrollingSpeed');
+    
+    if (!notice.scrollingMessages) {
+        notice.scrollingMessages = {
+            enabled: false,
+            title: '',
+            csvFileName: '',
+            speed: 'normal',
+            messages: []
+        };
+    }
+    
+    if (enableCheckbox) enableCheckbox.checked = notice.scrollingMessages.enabled;
+    if (titleInput) titleInput.value = notice.scrollingMessages.title;
+    if (csvFileInput) csvFileInput.value = notice.scrollingMessages.csvFileName;
+    if (speedSelect) speedSelect.value = notice.scrollingMessages.speed || 'normal';
+}
 
 // Make functions globally accessible
 window.editNotice = editNotice;

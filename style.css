@@ -800,6 +800,152 @@ body.dark-mode {
     color: #aaa;
 }
 
+/* Scrolling Messages Section */
+.scrolling-messages-section {
+    border-top: 1px solid #ecf0f1;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.scrolling-messages-section h3 {
+    color: #2c3e50;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.dark-mode .scrolling-messages-section h3 {
+    color: #ffffff;
+}
+
+.dark-mode .scrolling-messages-section {
+    border-top-color: #555;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    color: #34495e;
+}
+
+.dark-mode .checkbox-container {
+    color: #ffffff;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+/* Scrolling Messages Display */
+.scrolling-messages {
+    background: linear-gradient(45deg, #f8f9fa, #ffffff);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-left: 4px solid #3498db;
+    max-height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .scrolling-messages {
+        padding: 0.8rem;
+        margin: 0.8rem 0;
+        max-height: 150px;
+        border-radius: 8px;
+    }
+}
+
+.dark-mode .scrolling-messages {
+    background: linear-gradient(45deg, #404040, #505050);
+    border-left-color: #3498db;
+}
+
+.scrolling-messages h4 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.dark-mode .scrolling-messages h4 {
+    color: #ffffff;
+}
+
+.messages-container {
+    height: 150px;
+    overflow: hidden;
+    position: relative;
+    mask: linear-gradient(180deg, transparent 0%, black 20%, black 80%, transparent 100%);
+    -webkit-mask: linear-gradient(180deg, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+@media (max-width: 768px) {
+    .messages-container {
+        height: 100px;
+    }
+}
+
+.messages-scroll {
+    animation: verticalScroll 15s linear infinite;
+}
+
+.messages-scroll.slow {
+    animation-duration: 20s;
+}
+
+.messages-scroll.normal {
+    animation-duration: 15s;
+}
+
+.messages-scroll.fast {
+    animation-duration: 10s;
+}
+
+.messages-scroll.very-fast {
+    animation-duration: 5s;
+}
+
+.message-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+    color: #34495e;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .message-item {
+        padding: 0.3rem 0;
+        font-size: 0.8rem;
+    }
+    
+    .scrolling-messages h4 {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+}
+
+.dark-mode .message-item {
+    color: #e0e0e0;
+    border-bottom-color: rgba(52, 152, 219, 0.3);
+}
+
+.message-item:last-child {
+    border-bottom: none;
+}
+
+@keyframes verticalScroll {
+    0% {
+        transform: translateY(100%);
+    }
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
 /* Rich text formatting in editor */
 .editor-content b,
 .editor-content strong {
@@ -843,6 +989,8 @@ body.dark-mode {
     justify-content: center;
     align-items: center;
     z-index: 1001;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .login-content {
@@ -852,6 +1000,10 @@ body.dark-mode {
     width: 90%;
     max-width: 300px;
     text-align: center;
+    margin: auto;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .login-content h3 {
@@ -892,6 +1044,19 @@ body.dark-mode {
 @media (max-width: 768px) {
     .header h1 {
         font-size: 1.2rem;
+    }
+    
+    .login-modal {
+        padding: 1rem;
+        align-items: flex-start;
+        padding-top: 20vh;
+    }
+    
+    .login-content {
+        width: 95%;
+        max-width: 350px;
+        margin: 0 auto;
+        padding: 1.5rem;
     }
     
     .notice-card {

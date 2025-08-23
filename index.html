@@ -91,6 +91,27 @@
                 </div>
                 
                 <input type="url" id="noticeLink" placeholder="Link (optional)">
+                
+                <div class="scrolling-messages-section">
+                    <h3>Scrolling Messages Settings (For This Notice)</h3>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="enableScrollingMessages">
+                        <span class="checkmark"></span>
+                        Enable Scrolling Messages for this notice
+                    </label>
+                    <input type="text" id="scrollingTitle" placeholder="Scrolling Message Title (optional)">
+                    <input type="text" id="csvFileName" placeholder="CSV File Name (e.g., students.csv)">
+                    <div class="form-row">
+                        <select id="scrollingSpeed">
+                            <option value="">Select Scrolling Speed</option>
+                            <option value="slow">Slow (20s)</option>
+                            <option value="normal">Normal (15s)</option>
+                            <option value="fast">Fast (10s)</option>
+                            <option value="very-fast">Very Fast (5s)</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <button type="submit" id="submitBtn">Add Notice</button>
             </form>
         </div>
