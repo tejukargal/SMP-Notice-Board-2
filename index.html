@@ -92,26 +92,26 @@
                 
                 <input type="url" id="noticeLink" placeholder="Link (optional)">
                 
-                <div class="scrolling-messages-section">
-                    <h3>Scrolling Messages Settings (For This Notice)</h3>
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="enableScrollingMessages">
-                        <span class="checkmark"></span>
-                        Enable Scrolling Messages for this notice
+                <div class="form-group">
+                    <label for="scrollingEnabled">
+                        <input type="checkbox" id="scrollingEnabled">
+                        <span>Enable Scrolling Messages</span>
                     </label>
-                    <input type="text" id="scrollingTitle" placeholder="Scrolling Message Title (optional)">
-                    <input type="text" id="csvFileName" placeholder="CSV File Name (e.g., students.csv)">
-                    <div class="form-row">
-                        <select id="scrollingSpeed">
-                            <option value="">3 Rows/Second (Recommended)</option>
-                            <option value="ultra-slow">Very Slow (4x slower)</option>
-                            <option value="very-slow">Slow (3x slower)</option>
-                            <option value="slow">Slower (2x slower)</option>
-                            <option value="normal">Fast (1.5x faster)</option>
-                            <option value="fast">Very Fast (2x faster)</option>
-                            <option value="very-fast">Ultra Fast (3x faster)</option>
-                        </select>
-                    </div>
+                    <small class="form-help">Enable to display scrolling data from students.csv file</small>
+                </div>
+
+                <div class="form-group scrolling-options" id="scrollingOptions" style="display: none;">
+                    <label for="scrollingLabel">Scrolling Message Label</label>
+                    <input type="text" id="scrollingLabel" placeholder="e.g., Fee Dues, Results, Announcements" maxlength="50">
+                    <small class="form-help">Label to display above the scrolling messages</small>
+                    
+                    <label for="scrollingSpeed">Scrolling Speed</label>
+                    <select id="scrollingSpeed">
+                        <option value="slow">Slow</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="fast">Fast</option>
+                        <option value="speed">Speed</option>
+                    </select>
                 </div>
                 
                 <button type="submit" id="submitBtn">Add Notice</button>

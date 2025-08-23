@@ -891,32 +891,35 @@ body.dark-mode {
 
 .messages-scroll {
     animation: verticalScroll 60s linear infinite;
+    /* Duration is now dynamically calculated by JavaScript for exact 3 rows/sec */
 }
 
-/* Dynamic speeds - will be overridden by JavaScript based on message count */
+/* Speed classes - JavaScript overrides with calculated durations for precise speeds */
 .messages-scroll.ultra-slow {
-    animation-duration: 120s;
+    /* ~0.85 rows/sec - Duration calculated by JS */
 }
 
 .messages-scroll.very-slow {
-    animation-duration: 90s;
+    /* ~1.2 rows/sec - Duration calculated by JS */
 }
 
 .messages-scroll.slow {
-    animation-duration: 60s;
+    /* ~1.7 rows/sec - Duration calculated by JS */
 }
 
 .messages-scroll.normal {
-    animation-duration: 45s;
+    /* ~2.5 rows/sec - Duration calculated by JS */
 }
 
 .messages-scroll.fast {
-    animation-duration: 30s;
+    /* ~3.75 rows/sec - Duration calculated by JS */
 }
 
 .messages-scroll.very-fast {
-    animation-duration: 20s;
+    /* ~5 rows/sec - Duration calculated by JS */
 }
+
+/* Default auto speed provides exactly 3 rows/sec for optimal readability */
 
 .message-item {
     padding: 0.5rem 0;
@@ -953,6 +956,111 @@ body.dark-mode {
     100% {
         transform: translateY(-100%);
     }
+}
+
+/* CSS for reference implementation scrolling */
+@keyframes scroll-csv-smooth {
+    0% {
+        transform: translateY(0%);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+.scrolling-message-inline {
+    margin: 1rem 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f9f9f9;
+}
+
+.scrolling-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #3498db;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.scrolling-count {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.scrolling-separator {
+    margin: 0;
+    border: none;
+    border-top: 1px solid #bdc3c7;
+}
+
+.scrolling-content-area {
+    height: 150px;
+    overflow: hidden;
+    position: relative;
+    background: white;
+}
+
+.scrolling-animation {
+    animation: scroll-csv-smooth var(--scroll-duration, 25s) linear infinite;
+    will-change: transform;
+}
+
+.csv-mobile-row {
+    display: flex;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ecf0f1;
+    min-height: 40px;
+    align-items: center;
+}
+
+.csv-mobile-row:last-child {
+    border-bottom: none;
+}
+
+.csv-column {
+    flex: 1;
+    padding: 0 0.5rem;
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.csv-cell-text {
+    text-align: left;
+    color: #2c3e50;
+}
+
+.csv-cell-numeric {
+    text-align: right;
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.dark-mode .scrolling-message-inline {
+    background: #2c3e50;
+    border-color: #34495e;
+}
+
+.dark-mode .scrolling-content-area {
+    background: #34495e;
+}
+
+.dark-mode .csv-mobile-row {
+    border-bottom-color: #3e4651;
+}
+
+.dark-mode .csv-cell-text {
+    color: #ecf0f1;
+}
+
+.dark-mode .csv-cell-numeric {
+    color: #2ecc71;
 }
 
 /* Rich text formatting in editor */

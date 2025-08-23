@@ -1,11 +1,8 @@
 // Sample notices data
-// Global CSV messages cache
-let csvMessagesCache = {};
+// CSV data cache - following reference implementation structure
+let csvData = {};
 
-// Common CSV files to preload at startup
-const STARTUP_CSV_FILES = ['students.csv'];
-
-// Track CSV loading status
+// CSV loading status
 let csvLoadingStatus = {
     loaded: false,
     files: {},
@@ -23,13 +20,10 @@ let notices = [
         category: "Notice",
         date: "2025-08-20",
         link: "",
-        scrollingMessages: {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        }
+        scrollingEnabled: false,
+        scrollingLabel: '',
+        scrollingSpeed: 'medium',
+        order: 1
     },
     {
         id: 2,
@@ -41,13 +35,10 @@ let notices = [
         category: "Notice",
         date: "2025-08-18",
         link: "",
-        scrollingMessages: {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        }
+        scrollingEnabled: false,
+        scrollingLabel: '',
+        scrollingSpeed: 'medium',
+        order: 1
     },
     {
         id: 3,
@@ -59,13 +50,10 @@ let notices = [
         category: "Notice",
         date: "2025-08-17",
         link: "",
-        scrollingMessages: {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        }
+        scrollingEnabled: false,
+        scrollingLabel: '',
+        scrollingSpeed: 'medium',
+        order: 1
     },
     {
         id: 4,
@@ -77,13 +65,10 @@ let notices = [
         category: "Memo",
         date: "2025-08-15",
         link: "https://scholarship.gov.in",
-        scrollingMessages: {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        }
+        scrollingEnabled: false,
+        scrollingLabel: '',
+        scrollingSpeed: 'medium',
+        order: 1
     },
     {
         id: 5,
@@ -95,13 +80,10 @@ let notices = [
         category: "Result",
         date: "2025-08-14",
         link: "",
-        scrollingMessages: {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        }
+        scrollingEnabled: false,
+        scrollingLabel: '',
+        scrollingSpeed: 'medium',
+        order: 1
     },
     {
         id: 6,
@@ -113,13 +95,10 @@ let notices = [
         category: "Notice",
         date: "2025-08-12",
         link: "",
-        scrollingMessages: {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        }
+        scrollingEnabled: false,
+        scrollingLabel: '',
+        scrollingSpeed: 'medium',
+        order: 1
     },
     {
         id: 7,
@@ -131,13 +110,10 @@ let notices = [
         category: "Memo",
         date: "2025-08-10",
         link: "",
-        scrollingMessages: {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        }
+        scrollingEnabled: false,
+        scrollingLabel: '',
+        scrollingSpeed: 'medium',
+        order: 1
     }
 ];
 
@@ -182,43 +158,262 @@ let autoSyncInterval = null;
 // Initialize the app
 async function init() {
     loadDarkModePreference();
-    loadScrollingMessagesSettings();
     
-    // Load scrolling messages for notices that have them enabled
-    console.log('Setting up scrolling messages during initialization...');
+    // Load all CSV files at startup - following reference implementation
+    await loadAllCSVFiles();
     
-    for (const notice of notices) {
-        if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
-            // Check if data is already preloaded
-            if (csvMessagesCache[notice.scrollingMessages.csvFileName]) {
-                console.log(`✅ Using preloaded data for notice ${notice.id}: ${csvMessagesCache[notice.scrollingMessages.csvFileName].length} messages`);
-                notice.scrollingMessages.messages = csvMessagesCache[notice.scrollingMessages.csvFileName];
-            } else if (STARTUP_CSV_FILES.includes(notice.scrollingMessages.csvFileName)) {
-                // Mark for loading and will be updated after preload completes
-                console.log(`⏳ Marking notice ${notice.id} for CSV update after preload`);
-                notice.scrollingMessages.messages = []; // Temporary empty array
-            } else {
-                // Load non-startup CSV files in background
-                console.log(`📂 Loading custom CSV for notice ${notice.id}`);
-                loadCSVMessages(notice.scrollingMessages.csvFileName).then(messages => {
-                    notice.scrollingMessages.messages = messages;
-                    updateScrollingMessagesDisplay(notice);
-                }).catch(csvError => {
-                    console.warn(`Failed to load CSV messages for notice ${notice.id}:`, csvError);
-                    notice.scrollingMessages.messages = [];
-                });
-            }
+    // Initialize with demo scrolling notice if no notices exist
+    if (notices.length === 0) {
+        createDemoScrollingNotice();
+    } else {
+        // Check if we have any scrolling notices, if not create one for testing
+        const hasScrollingNotice = notices.some(notice => notice.scrollingEnabled);
+        if (!hasScrollingNotice) {
+            console.log('No scrolling notices found, creating demo scrolling notice');
+            createDemoScrollingNotice();
         }
     }
     
     renderNotices();
     setupEventListeners();
     updateNavigation();
+    
+    // Initialize scrolling animations after rendering
+    setTimeout(() => initializeScrollingAnimations(), 100);
+    
     if (BUILT_IN_SYNC.enabled) {
         setupAutoSync();
-        // Initial sync test
         setTimeout(testBuiltInConnection, 2000);
     }
+}
+
+// Legacy function - no longer needed with reference implementation
+
+// Create a demo notice with scrolling messages to showcase the feature
+function createDemoScrollingNotice() {
+    const demoNotice = {
+        id: `demo-${Date.now()}`,
+        title: 'Fee Dues Notice - Student List',
+        content: '<p><strong>Important Notice:</strong> The following students have pending fee dues. Please contact the accounts office immediately to clear your dues.</p><p>Payment can be made at the college office during working hours (9:00 AM - 4:00 PM).</p><p>For any queries, contact the accounts department at extension 234.</p>',
+        course: 'ALL',
+        priority: 'High',
+        importance: 'Critical',
+        category: 'Notice',
+        date: new Date().toISOString().split('T')[0],
+        link: '',
+        scrollingEnabled: true,
+        scrollingLabel: 'Student Fee Dues List',
+        scrollingSpeed: 'medium',
+        order: 1
+    };
+    
+    notices.push(demoNotice);
+    saveLocalNotices();
+    
+    console.log('Demo scrolling notice created successfully');
+}
+
+// Load all available CSV files at startup - following reference implementation
+async function loadAllCSVFiles() {
+    console.log('Loading CSV files at startup...');
+    
+    // Try to load common CSV files
+    const csvFiles = ['students.csv', '1.csv', '2.csv', '3.csv', '4.csv', '5.csv'];
+    
+    for (const fileName of csvFiles) {
+        try {
+            const csvText = await fetchCSVFile(fileName);
+            if (csvText) {
+                // Store raw CSV text for processing
+                csvData[fileName] = csvText;
+                const lineCount = csvText.trim().split('\n').length;
+                console.log(`Loaded CSV file ${fileName} with ${lineCount} lines`);
+            }
+        } catch (error) {
+            // File doesn't exist or error loading, skip silently
+            console.log(`CSV file ${fileName} not found or error loading`);
+        }
+    }
+    
+    console.log(`Loaded ${Object.keys(csvData).length} CSV files`);
+}
+
+// Fetch CSV file content
+async function fetchCSVFile(fileName) {
+    try {
+        const response = await fetch(fileName);
+        if (response.ok) {
+            return await response.text();
+        }
+        return null;
+    } catch (error) {
+        console.log(`Error fetching ${fileName}:`, error);
+        return null;
+    }
+}
+
+// Get scroll speed multiplier - following reference implementation
+function getScrollSpeed(speedSetting = 'medium') {
+    const speeds = {
+        'slow': 2.0,     // Slow and readable
+        'medium': 1.5,   // Optimal for reading
+        'fast': 1.0,     // Faster pace for long lists
+        'speed': 0.8     // Very fast scrolling for very long lists
+    };
+    return speeds[speedSetting] || speeds['medium'];
+}
+
+// Calculate optimal scroll speed based on row count
+function calculateOptimalScrollSpeed(rowCount) {
+    if (rowCount <= 10) return 1.5;  // Faster for fewer rows
+    if (rowCount <= 50) return 1.0;
+    if (rowCount <= 100) return 0.7;
+    return 0.4; // Much faster for many rows
+}
+
+// Create scrolling text HTML - following reference implementation
+function createScrollingTextHTML(csvText, label, speed = 'medium') {
+    try {
+        // Parse CSV text properly
+        const lines = csvText.trim().split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+            return createEmptyScrollingMessage(label);
+        }
+
+        // Parse headers and data rows
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        const dataRows = lines.slice(1).map(line => {
+            const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = values[index] || '';
+            });
+            return row;
+        });
+
+        // Create sanitized data structure
+        const sanitizedData = {
+            headers: headers,
+            rows: dataRows
+        };
+
+        // Create mobile column-based format
+        const createMobileRowHTML = (row, index) => {
+            const rowCells = sanitizedData.headers.map((header, colIndex) => {
+                const cellValue = formatCellValue(row[header] || '', header, colIndex);
+                const sanitizedValue = escapeHtml(cellValue);
+                // Check if value looks like an amount
+                const isAmount = /(?:rs\.?|₹|\$|fee|amount|due|paid|balance|total|sum)/i.test(header) || 
+                               /(?:rs\.?\s*\d|₹\s*\d|\d+\.?\d*\s*(?:rs|₹)|\d+\.\d+)/i.test(sanitizedValue);
+                const isNumeric = /^\d+\.?\d*$/.test(sanitizedValue) || isAmount;
+                const cellClass = isNumeric ? 'csv-cell-numeric' : 'csv-cell-text';
+                return `<div class="csv-column ${cellClass}" data-column="${colIndex}" title="${sanitizedValue}">${sanitizedValue}</div>`;
+            }).join('');
+            return `<div class="csv-mobile-row" data-row="${index}">${rowCells}</div>`;
+        };
+
+        // Create original and duplicated rows for seamless scrolling
+        const originalMobileRowsHTML = sanitizedData.rows.map(createMobileRowHTML).join('');
+        const duplicatedMobileRowsHTML = sanitizedData.rows.map((row, index) => 
+            createMobileRowHTML(row, index + sanitizedData.rows.length)
+        ).join('');
+        const allMobileRowsHTML = originalMobileRowsHTML + duplicatedMobileRowsHTML;
+
+        // Enhanced timing calculation with adaptive speed
+        const totalRows = sanitizedData.rows.length;
+        const baseSpeed = calculateOptimalScrollSpeed(totalRows);
+        const minDuration = speed === 'speed' ? 3 : (speed === 'fast' ? 5 : 10);
+        const animationDuration = Math.max(totalRows * baseSpeed, minDuration);
+        
+        // Generate unique ID for this scrolling instance
+        const instanceId = `csv-scroll-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        return `
+            <div class="scrolling-message-inline" id="${instanceId}" data-rows="${totalRows}">
+                <div class="scrolling-label">
+                    <div>
+                        ${escapeHtml(label)}
+                    </div>
+                    <span class="scrolling-count">(${totalRows} records)</span>
+                </div>
+                <hr class="scrolling-separator">
+                <div class="scrolling-content-area">
+                    <div class="scrolling-animation"
+                         style="--scroll-duration: ${animationDuration}s; --total-rows: ${totalRows};"
+                         data-animation-duration="${animationDuration}"
+                         data-total-rows="${totalRows}">
+                        ${allMobileRowsHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error creating scrolling message HTML:', error);
+        return createErrorScrollingMessage(label, error.message);
+    }
+}
+
+// Helper functions
+function createEmptyScrollingMessage(label) {
+    return `
+        <div class="scrolling-message-inline">
+            <div class="scrolling-label">
+                <div>${escapeHtml(label)}</div>
+                <span class="scrolling-count">(No data)</span>
+            </div>
+            <div class="scrolling-content">
+                <p style="color: #999; font-style: italic;">No data available</p>
+            </div>
+        </div>
+    `;
+}
+
+function createErrorScrollingMessage(label, error) {
+    return `
+        <div class="scrolling-message-inline">
+            <div class="scrolling-label">
+                <div>${escapeHtml(label)}</div>
+                <span class="scrolling-count">(Error)</span>
+            </div>
+            <div class="scrolling-content">
+                <p style="color: #e74c3c; font-style: italic;">Error: ${escapeHtml(error)}</p>
+            </div>
+        </div>
+    `;
+}
+
+function formatCellValue(value, header, colIndex) {
+    return String(value);
+}
+
+function escapeHtml(text) {
+    if (typeof text !== 'string') {
+        text = String(text);
+    }
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Initialize scrolling animations after DOM insertion
+function initializeScrollingAnimations() {
+    const scrollContainers = document.querySelectorAll('.scrolling-message-inline');
+    console.log(`Found ${scrollContainers.length} CSV scrolling containers`);
+    
+    scrollContainers.forEach(container => {
+        const scrollContent = container.querySelector('.scrolling-animation');
+        if (scrollContent) {
+            const duration = scrollContent.dataset.animationDuration || '25';
+            console.log(`Initializing animation for container ${container.id} with duration ${duration}s`);
+            
+            // Ensure animation is properly applied
+            scrollContent.style.setProperty('--scroll-duration', `${duration}s`);
+            scrollContent.style.animation = `scroll-csv-smooth ${duration}s linear infinite`;
+            
+            // Force reflow to ensure animation starts
+            scrollContent.offsetHeight;
+        }
+    });
 }
 
 // Sort notices by importance and reassign serial numbers
@@ -285,8 +480,8 @@ function createNoticeCard(notice, index) {
                 <span class="category-tag">${notice.category}</span>
             </div>
             <div class="notice-content">${notice.content}</div>
-            ${notice.scrollingMessages && notice.scrollingMessages.enabled ? 
-                createScrollingMessagesHTML(notice.scrollingMessages.title, notice.scrollingMessages.messages, notice.scrollingMessages.speed) : ''}
+            ${notice.scrollingEnabled && notice.scrollingLabel && csvData['students.csv'] ? 
+                createScrollingTextHTML(csvData['students.csv'], notice.scrollingLabel, notice.scrollingSpeed) : ''}
             ${notice.link ? `<a href="${notice.link}" target="_blank" class="notice-link">View Link</a>` : ''}
         </div>
     `;
@@ -402,8 +597,15 @@ function setupEventListeners() {
     // Notice form submission
     noticeForm.addEventListener('submit', handleNoticeSubmissionWithSync);
     
-    // Scrolling messages settings are now handled per-notice
-    // No global event listeners needed
+    // Add event listener for scrolling enabled checkbox to show/hide options
+    const scrollingEnabledCheckbox = document.getElementById('scrollingEnabled');
+    const scrollingOptions = document.getElementById('scrollingOptions');
+    
+    if (scrollingEnabledCheckbox && scrollingOptions) {
+        scrollingEnabledCheckbox.addEventListener('change', function() {
+            scrollingOptions.style.display = this.checked ? 'block' : 'none';
+        });
+    }
 
     // Enhanced touch/swipe events for mobile
     let startX = 0;
@@ -599,7 +801,7 @@ async function handleNoticeSubmission(e) {
                 enabled: false,
                 title: '',
                 csvFileName: '',
-                speed: 'normal',
+                speed: 'auto',
                 messages: []
             }
         };
@@ -1053,7 +1255,7 @@ function loadLocalNotices() {
                     enabled: false,
                     title: '',
                     csvFileName: '',
-                    speed: 'normal',
+                    speed: 'auto',
                     messages: []
                 };
             }
@@ -1125,92 +1327,80 @@ async function preloadCSVFiles() {
 document.addEventListener('DOMContentLoaded', async () => {
     loadLocalNotices();
     
-    // Start CSV preloading immediately
-    const csvPreloadPromise = preloadCSVFiles();
-    
-    // Initialize app (don't wait for CSV preloading)
+    // Initialize app
     await init();
-    
-    // Ensure CSV preloading is complete and update any notices that need it
-    await csvPreloadPromise;
-    console.log('🔄 CSV preloading completed, updating notices with preloaded data...');
-    
-    // Update notices that were waiting for preloaded CSV data
-    let updatedNotices = 0;
-    for (const notice of notices) {
-        if (notice.scrollingMessages && notice.scrollingMessages.enabled && 
-            notice.scrollingMessages.csvFileName && 
-            STARTUP_CSV_FILES.includes(notice.scrollingMessages.csvFileName)) {
-            
-            if (csvMessagesCache[notice.scrollingMessages.csvFileName]) {
-                notice.scrollingMessages.messages = csvMessagesCache[notice.scrollingMessages.csvFileName];
-                console.log(`📝 Updated notice ${notice.id} with ${notice.scrollingMessages.messages.length} preloaded messages`);
-                updatedNotices++;
-            }
-        }
-    }
-    
-    if (updatedNotices > 0) {
-        console.log(`✨ Updated ${updatedNotices} notices with preloaded CSV data, re-rendering...`);
-        renderNotices();
-        saveLocalNotices();
-    } else {
-        console.log('ℹ️  No notices needed CSV data updates');
-    }
 });
 
 // CSV Parsing and Scrolling Messages Functions
 async function parseCSVFile(fileName) {
     try {
-        const response = await fetch(fileName);
+        console.log(`📥 Fetching CSV file: ${fileName}`);
+        const response = await fetch(fileName, { cache: 'force-cache' }); // Enable caching
         if (!response.ok) {
-            throw new Error(`Could not fetch ${fileName}`);
+            throw new Error(`Could not fetch ${fileName} (${response.status})`);
         }
         const csvText = await response.text();
-        return parseCSVText(csvText);
+        console.log(`📊 Processing CSV data (${csvText.length} chars)`);
+        return await parseCSVText(csvText);
     } catch (error) {
-        console.error('Error parsing CSV file:', error);
+        console.error('❌ Error parsing CSV file:', error);
         return [];
     }
 }
 
-function parseCSVText(csvText) {
+async function parseCSVText(csvText) {
     const lines = csvText.trim().split('\n');
     if (lines.length < 2) return [];
     
-    const headers = lines[0].split(',').map(h => h.trim());
+    // Use batch processing for better performance
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const messages = [];
     
-    // Parse CSV with performance optimization
-    const maxLines = Math.min(lines.length, 1000); // Limit to 1000 entries for performance
+    // Optimize CSV parsing with batch processing
+    const maxLines = Math.min(lines.length, 500); // Reduced to 500 for better performance
+    const batchSize = 50; // Process in batches
     
-    for (let i = 1; i < maxLines; i++) {
-        if (!lines[i].trim()) continue; // Skip empty lines
+    // Pre-determine header indices for faster access (Updated for new CSV structure)
+    const studentNameIndex = 0; // "Student Name" is first column
+    const yearIndex = 1; // "Year" is second column  
+    const courseIndex = 2; // "Course" is third column
+    const feeDuesIndex = 3; // "Fee Dues" is fourth column
+    
+    // Process in batches for better performance
+    for (let batch = 1; batch < maxLines; batch += batchSize) {
+        const batchEnd = Math.min(batch + batchSize, maxLines);
         
-        const values = lines[i].split(',').map(v => v.trim());
-        const row = {};
+        for (let i = batch; i < batchEnd; i++) {
+            const line = lines[i];
+            if (!line || !line.trim()) continue;
+            
+            // Fast CSV parsing - split and trim in one operation
+            const values = line.split(',');
+            if (values.length < 4) continue; // Skip malformed rows (now expecting 4 columns)
+            
+            // Direct access without object creation for speed
+            const studentName = (values[studentNameIndex] || 'N/A').trim().replace(/"/g, '');
+            const year = (values[yearIndex] || '').trim().replace(/"/g, '');
+            const course = (values[courseIndex] || '').trim().replace(/"/g, '');
+            const feeDues = (values[feeDuesIndex] || '0').trim().replace(/"/g, '');
+            
+            // Create optimized message format
+            const message = `${studentName} - ${year} ${course} - Dues: ₹${feeDues}`;
+            messages.push(message);
+        }
         
-        headers.forEach((header, index) => {
-            row[header] = values[index] || '';
-        });
-        
-        // Create a formatted message from the row data
-        // New format: Sl No,Student Name,Father Name,Year,Course,Total Paid
-        const studentName = row[headers[1]] || 'N/A';
-        const year = row[headers[3]] || '';
-        const course = row[headers[4]] || '';
-        const totalPaid = row[headers[5]] || '0';
-        const message = `${studentName} - ${year} ${course} - Paid: ₹${totalPaid}`;
-        messages.push(message);
+        // Yield control every batch to prevent UI blocking
+        if (batch % (batchSize * 4) === 1) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
     }
     
-    console.log(`Parsed ${messages.length} messages from CSV (${lines.length - 1} total rows)`);
+    console.log(`✅ Optimized parsing (4-column CSV): ${messages.length} messages from ${lines.length - 1} total rows`);
     return messages;
 }
 
 function createScrollingMessagesHTML(title, messages, speed = 'auto') {
     if (!messages || messages.length === 0) {
-        // Return placeholder even when no messages to show title and container
         return `
             <div class="scrolling-messages">
                 <h4>${title || 'Scrolling Messages'} (Loading...)</h4>
@@ -1223,47 +1413,52 @@ function createScrollingMessagesHTML(title, messages, speed = 'auto') {
         `;
     }
     
-    const messagesHTML = messages.map(message => 
+    // Optimize HTML generation with join for better performance
+    const messageCount = Math.min(messages.length, 200); // Limit displayed messages for performance
+    const visibleMessages = messages.slice(0, messageCount);
+    
+    // Use template literals efficiently
+    const messagesHTML = visibleMessages.map(message => 
         `<div class="message-item">${message}</div>`
     ).join('');
     
-    const messageCount = messages.length;
+    // Optimized speed calculation for exactly 3 rows per second
+    // Formula: duration = (total_visible_rows) / 3 rows_per_second
+    // We duplicate messages, so total rows = messageCount * 2
+    const totalRows = messageCount * 2;
+    let baseDuration = Math.max(15, Math.round(totalRows / 3)); // 3 rows per second baseline
     
-    // Calculate duration for 3 rows per second (readable speed) - this is our baseline
-    // Since we duplicate messages, total visible rows = messageCount * 2
-    // At 3 rows/second: duration = (messageCount * 2) / 3
-    let baseDuration = Math.max(20, Math.round((messageCount * 2) / 3)); // Minimum 20 seconds
-    
-    // Apply speed multipliers based on user selection
+    // Speed multipliers (keeping 3 rows/sec as default 'auto')
     let finalDuration = baseDuration;
     switch(speed) {
-        case 'ultra-slow': finalDuration = baseDuration * 4; break;  // 4x slower
-        case 'very-slow': finalDuration = baseDuration * 3; break;   // 3x slower
-        case 'slow': finalDuration = baseDuration * 2; break;        // 2x slower
-        case 'normal': finalDuration = Math.round(baseDuration / 1.5); break; // 1.5x faster
-        case 'fast': finalDuration = Math.round(baseDuration / 2); break;      // 2x faster
-        case 'very-fast': finalDuration = Math.round(baseDuration / 3); break; // 3x faster
-        default: finalDuration = baseDuration; // 3 rows/second (recommended)
+        case 'ultra-slow': finalDuration = Math.round(baseDuration * 3.5); break;  // ~0.85 rows/sec
+        case 'very-slow': finalDuration = Math.round(baseDuration * 2.5); break;   // ~1.2 rows/sec
+        case 'slow': finalDuration = Math.round(baseDuration * 1.8); break;        // ~1.7 rows/sec
+        case 'normal': finalDuration = Math.round(baseDuration * 1.2); break;      // ~2.5 rows/sec
+        case 'fast': finalDuration = Math.round(baseDuration * 0.8); break;        // ~3.75 rows/sec
+        case 'very-fast': finalDuration = Math.round(baseDuration * 0.6); break;   // ~5 rows/sec
+        default: finalDuration = baseDuration; // 3 rows/second (optimal readability)
     }
     
-    const calculatedDuration = Math.max(10, finalDuration); // Absolute minimum 10 seconds
+    const calculatedDuration = Math.max(10, finalDuration);
+    const actualSpeed = (totalRows / calculatedDuration).toFixed(1);
     
     // Generate unique ID for this scrolling container
     const containerId = `scroll-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const html = `
         <div class="scrolling-messages">
-            <h4>${title || 'Scrolling Messages'} (${messageCount} entries)</h4>
+            <h4>${title || 'Scrolling Messages'} (${messageCount} entries, ${actualSpeed} rows/sec)</h4>
             <div class="messages-container">
                 <div class="messages-scroll" id="${containerId}" data-message-count="${messageCount}" style="animation-duration: ${calculatedDuration}s;">
                     ${messagesHTML}
-                    ${messagesHTML} <!-- Duplicate for seamless scrolling -->
+                    ${messagesHTML}
                 </div>
             </div>
         </div>
     `;
     
-    console.log(`Created scrolling messages with ${messageCount} entries, duration: ${calculatedDuration}s (3 rows/sec)`);
+    console.log(`🎨 Generated scrolling: ${messageCount} entries, ${calculatedDuration}s duration, ${actualSpeed} rows/sec`);
     return html;
 }
 
@@ -1313,16 +1508,16 @@ function clearCSVCache(csvFileName = null) {
 
 // Update scrolling messages display for a specific notice without full re-render
 function updateScrollingMessagesDisplay(notice) {
-    if (!notice.scrollingMessages || !notice.scrollingMessages.enabled) return;
-    
     // Find all notice cards and update the one with matching notice ID
     const noticeCards = document.querySelectorAll('.notice-card');
     noticeCards.forEach(card => {
         const noticeTitle = card.querySelector('.notice-title');
         if (noticeTitle && noticeTitle.textContent === notice.title) {
-            const scrollingContainer = card.querySelector('.scrolling-messages');
-            if (scrollingContainer) {
-                // Replace the existing scrolling messages with updated content
+            const noticeBody = card.querySelector('.notice-body');
+            const existingScrollingContainer = card.querySelector('.scrolling-messages');
+            
+            if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.messages.length > 0) {
+                // Create or update scrolling messages
                 const newHTML = createScrollingMessagesHTML(
                     notice.scrollingMessages.title, 
                     notice.scrollingMessages.messages, 
@@ -1331,68 +1526,74 @@ function updateScrollingMessagesDisplay(notice) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = newHTML;
                 const newScrollingContainer = tempDiv.firstElementChild;
-                scrollingContainer.parentNode.replaceChild(newScrollingContainer, scrollingContainer);
-                console.log(`Updated scrolling messages display for notice: ${notice.title}`);
+                
+                if (existingScrollingContainer) {
+                    // Replace existing
+                    existingScrollingContainer.parentNode.replaceChild(newScrollingContainer, existingScrollingContainer);
+                    console.log(`🔄 Updated scrolling messages for: ${notice.title}`);
+                } else {
+                    // Add new scrolling container before the link (if any)
+                    const noticeLink = card.querySelector('.notice-link');
+                    if (noticeLink) {
+                        noticeBody.insertBefore(newScrollingContainer, noticeLink);
+                    } else {
+                        noticeBody.appendChild(newScrollingContainer);
+                    }
+                    console.log(`➕ Added scrolling messages to: ${notice.title}`);
+                }
+            } else {
+                // Remove scrolling messages if disabled or empty
+                if (existingScrollingContainer) {
+                    existingScrollingContainer.remove();
+                    console.log(`➖ Removed scrolling messages from: ${notice.title}`);
+                }
             }
         }
     });
 }
 
 async function updateNoticeScrollingMessages(noticeId) {
-    const enableCheckbox = document.getElementById('enableScrollingMessages');
-    const titleInput = document.getElementById('scrollingTitle');
-    const csvFileInput = document.getElementById('csvFileName');
+    const enableCheckbox = document.getElementById('scrollingEnabled');
+    const labelInput = document.getElementById('scrollingLabel');
     const speedSelect = document.getElementById('scrollingSpeed');
     
     const notice = notices.find(n => n.id === noticeId);
     if (!notice) return;
     
-    // Initialize scrollingMessages if it doesn't exist
-    if (!notice.scrollingMessages) {
-        notice.scrollingMessages = {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        };
-    }
+    console.log(`🔄 Updating scrolling settings for notice ${noticeId}...`);
     
-    notice.scrollingMessages.enabled = enableCheckbox.checked;
-    notice.scrollingMessages.title = titleInput.value;
-    notice.scrollingMessages.csvFileName = csvFileInput.value;
-    notice.scrollingMessages.speed = speedSelect.value || 'normal';
+    // Update notice with new structure
+    notice.scrollingEnabled = enableCheckbox ? enableCheckbox.checked : false;
+    notice.scrollingLabel = labelInput ? labelInput.value : '';
+    notice.scrollingSpeed = speedSelect ? speedSelect.value || 'medium' : 'medium';
+    notice.order = notice.order || 1;
     
-    if (notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
-        notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName);
-    } else {
-        notice.scrollingMessages.messages = [];
-    }
+    console.log(`📋 Settings: enabled=${notice.scrollingEnabled}, label=${notice.scrollingLabel}, speed=${notice.scrollingSpeed}`);
     
     saveLocalNotices();
 }
 
 function loadNoticeScrollingSettings(notice) {
-    const enableCheckbox = document.getElementById('enableScrollingMessages');
-    const titleInput = document.getElementById('scrollingTitle');
-    const csvFileInput = document.getElementById('csvFileName');
+    const enableCheckbox = document.getElementById('scrollingEnabled');
+    const labelInput = document.getElementById('scrollingLabel');
     const speedSelect = document.getElementById('scrollingSpeed');
+    const scrollingOptions = document.getElementById('scrollingOptions');
     
-    if (!notice.scrollingMessages) {
-        notice.scrollingMessages = {
-            enabled: false,
-            title: '',
-            csvFileName: '',
-            speed: 'normal',
-            messages: []
-        };
+    // Initialize defaults if not present
+    if (notice.scrollingEnabled === undefined) {
+        notice.scrollingEnabled = false;
+        notice.scrollingLabel = '';
+        notice.scrollingSpeed = 'medium';
+        notice.order = 1;
     }
     
-    if (enableCheckbox) enableCheckbox.checked = notice.scrollingMessages.enabled;
-    if (titleInput) titleInput.value = notice.scrollingMessages.title;
-    if (csvFileInput) csvFileInput.value = notice.scrollingMessages.csvFileName;
-    if (speedSelect) speedSelect.value = notice.scrollingMessages.speed || 'normal';
+    if (enableCheckbox) enableCheckbox.checked = notice.scrollingEnabled;
+    if (labelInput) labelInput.value = notice.scrollingLabel || '';
+    if (speedSelect) speedSelect.value = notice.scrollingSpeed || 'medium';
+    if (scrollingOptions) scrollingOptions.style.display = notice.scrollingEnabled ? 'block' : 'none';
 }
+
+// Legacy function - removed in favor of simpler approach
 
 // Make functions globally accessible
 window.editNotice = editNotice;
