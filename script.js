@@ -674,19 +674,24 @@ function setupEventListeners() {
         });
     }
 
-    // Enhanced touch/swipe events for mobile
+    // Enhanced touch/swipe events for mobile with improved smoothness
     let startX = 0;
     let startY = 0;
     let startTime = 0;
     let isScrolling = false;
     let touchStarted = false;
+    let currentTransform = 0;
+    let isDragging = false;
+    let rafId = null;
 
     noticeContainer.addEventListener('touchstart', (e) => {
-        // Don't interfere with button clicks
+        // Don't interfere with button clicks and scrolling messages
         if (e.target.classList.contains('edit-btn') || 
             e.target.classList.contains('delete-btn') ||
             e.target.closest('.edit-btn') ||
-            e.target.closest('.delete-btn')) {
+            e.target.closest('.delete-btn') ||
+            e.target.closest('.scrolling-messages') ||
+            e.target.closest('.scrolling-content-area')) {
             return;
         }
         
@@ -695,19 +700,25 @@ function setupEventListeners() {
         startY = e.touches[0].clientY;
         startTime = Date.now();
         isScrolling = false;
+        isDragging = false;
         
-        // Prevent default scroll behavior during swipe
-        e.preventDefault();
-    }, { passive: false });
+        // Store initial scroll position
+        currentTransform = noticeContainer.scrollLeft;
+        
+        // Add transition disable class for smooth dragging
+        noticeContainer.style.scrollBehavior = 'auto';
+    }, { passive: true });
 
     noticeContainer.addEventListener('touchmove', (e) => {
         if (!touchStarted) return;
         
-        // Don't interfere with button interactions
+        // Don't interfere with button interactions and scrolling messages
         if (e.target.classList.contains('edit-btn') || 
             e.target.classList.contains('delete-btn') ||
             e.target.closest('.edit-btn') ||
-            e.target.closest('.delete-btn')) {
+            e.target.closest('.delete-btn') ||
+            e.target.closest('.scrolling-messages') ||
+            e.target.closest('.scrolling-content-area')) {
             return;
         }
         
@@ -717,25 +728,57 @@ function setupEventListeners() {
         const diffY = Math.abs(currentY - startY);
 
         // Determine if user is scrolling vertically or swiping horizontally
-        if (diffY > diffX) {
+        if (diffY > diffX && diffY > 10) {
             isScrolling = true;
+            return;
         }
 
-        // If horizontal swipe, prevent default scrolling
-        if (diffX > diffY && diffX > 10) {
-            e.preventDefault();
+        // If horizontal swipe is detected
+        if (diffX > diffY && diffX > 5) {
+            isDragging = true;
+            
+            // Smooth real-time dragging effect
+            if (rafId) cancelAnimationFrame(rafId);
+            
+            rafId = requestAnimationFrame(() => {
+                const deltaX = currentX - startX;
+                const containerWidth = noticeContainer.offsetWidth;
+                const cardWidth = containerWidth * 0.95; // Card takes 95% of viewport
+                const maxDelta = cardWidth * 0.3; // Limit drag to 30% of card width
+                
+                // Clamp delta to prevent over-dragging
+                const clampedDelta = Math.max(-maxDelta, Math.min(maxDelta, deltaX));
+                
+                // Apply subtle drag effect with resistance
+                const resistance = Math.abs(clampedDelta) / maxDelta;
+                const adjustedDelta = clampedDelta * (1 - resistance * 0.3);
+                
+                noticeContainer.style.transform = `translateX(${adjustedDelta}px)`;
+            });
         }
-    }, { passive: false });
+    }, { passive: true });
 
     noticeContainer.addEventListener('touchend', (e) => {
         if (!touchStarted) return;
         touchStarted = false;
 
-        // Don't interfere with button interactions
+        // Clean up animation frame
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+
+        // Reset transform and enable smooth scrolling
+        noticeContainer.style.transform = '';
+        noticeContainer.style.scrollBehavior = 'smooth';
+
+        // Don't interfere with button interactions and scrolling messages
         if (e.target.classList.contains('edit-btn') || 
             e.target.classList.contains('delete-btn') ||
             e.target.closest('.edit-btn') ||
-            e.target.closest('.delete-btn')) {
+            e.target.closest('.delete-btn') ||
+            e.target.closest('.scrolling-messages') ||
+            e.target.closest('.scrolling-content-area')) {
             return;
         }
 
@@ -745,18 +788,27 @@ function setupEventListeners() {
         const diffY = startY - endY;
         const timeDiff = Date.now() - startTime;
 
+        // Enhanced swipe detection with velocity consideration
+        const velocity = Math.abs(diffX) / timeDiff; // pixels per ms
+        const minSwipeDistance = isDragging ? 20 : 50; // Lower threshold if user was dragging
+        const maxSwipeTime = 800; // Increased time allowance for deliberate swipes
+
         // Only handle horizontal swipes (ignore vertical scrolling)
-        if (!isScrolling && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30 && timeDiff < 500) {
-            e.preventDefault();
+        if (!isScrolling && Math.abs(diffX) > Math.abs(diffY) && 
+            (Math.abs(diffX) > minSwipeDistance || velocity > 0.3) && 
+            timeDiff < maxSwipeTime) {
             
             if (diffX > 0 && currentNoticeIndex < notices.length - 1) {
-                // Swipe left - next notice
-                scrollToNotice(currentNoticeIndex + 1);
+                // Swipe left - next notice with smooth animation
+                setTimeout(() => scrollToNotice(currentNoticeIndex + 1), 50);
             } else if (diffX < 0 && currentNoticeIndex > 0) {
-                // Swipe right - previous notice
-                scrollToNotice(currentNoticeIndex - 1);
+                // Swipe right - previous notice with smooth animation
+                setTimeout(() => scrollToNotice(currentNoticeIndex - 1), 50);
             }
         }
+        
+        // Reset dragging state
+        isDragging = false;
     });
 
     // Mouse events for desktop swipe simulation
