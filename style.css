@@ -893,6 +893,14 @@ body.dark-mode {
     animation: verticalScroll 25s linear infinite;
 }
 
+.messages-scroll.ultra-slow {
+    animation-duration: 60s;
+}
+
+.messages-scroll.very-slow {
+    animation-duration: 45s;
+}
+
 .messages-scroll.slow {
     animation-duration: 35s;
 }

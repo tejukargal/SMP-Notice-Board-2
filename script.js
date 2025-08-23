@@ -175,9 +175,17 @@ async function init() {
     loadScrollingMessagesSettings();
     
     // Load scrolling messages for notices that have them enabled
+    console.log('Loading scrolling messages during initialization...');
     for (const notice of notices) {
         if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
-            notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName);
+            try {
+                console.log(`Loading messages for notice ${notice.id} from ${notice.scrollingMessages.csvFileName}`);
+                notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName);
+                console.log(`Loaded ${notice.scrollingMessages.messages.length} messages for notice ${notice.id} during init`);
+            } catch (csvError) {
+                console.warn(`Failed to load CSV messages for notice ${notice.id} during init:`, csvError);
+                notice.scrollingMessages.messages = [];
+            }
         }
     }
     
@@ -908,12 +916,14 @@ async function syncFromRemote() {
             
             // Reload scrolling messages for all notices that have them enabled
             console.log('Loading scrolling messages after sync...');
+            let messagesLoaded = false;
             for (const notice of notices) {
                 if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
                     try {
                         console.log(`Loading messages for notice ${notice.id} from ${notice.scrollingMessages.csvFileName}`);
                         notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName, true); // Force reload
                         console.log(`Loaded ${notice.scrollingMessages.messages.length} messages for notice ${notice.id}`);
+                        messagesLoaded = true;
                     } catch (csvError) {
                         console.warn(`Failed to load CSV messages for notice ${notice.id}:`, csvError);
                         notice.scrollingMessages.messages = [];
@@ -1063,7 +1073,12 @@ function parseCSVText(csvText) {
     const headers = lines[0].split(',').map(h => h.trim());
     const messages = [];
     
-    for (let i = 1; i < lines.length; i++) {
+    // Parse CSV with performance optimization
+    const maxLines = Math.min(lines.length, 1000); // Limit to 1000 entries for performance
+    
+    for (let i = 1; i < maxLines; i++) {
+        if (!lines[i].trim()) continue; // Skip empty lines
+        
         const values = lines[i].split(',').map(v => v.trim());
         const row = {};
         
@@ -1072,10 +1087,16 @@ function parseCSVText(csvText) {
         });
         
         // Create a formatted message from the row data
-        const message = `${row[headers[1]] || 'N/A'} - ${row[headers[2]] || ''} ${row[headers[3]] || ''} - Fee Dues: ${row[headers[5]] || '0'}`;
+        // New format: Sl No,Student Name,Father Name,Year,Course,Total Paid
+        const studentName = row[headers[1]] || 'N/A';
+        const year = row[headers[3]] || '';
+        const course = row[headers[4]] || '';
+        const totalPaid = row[headers[5]] || '0';
+        const message = `${studentName} - ${year} ${course} - Paid: ₹${totalPaid}`;
         messages.push(message);
     }
     
+    console.log(`Parsed ${messages.length} messages from CSV (${lines.length - 1} total rows)`);
     return messages;
 }
 
@@ -1086,11 +1107,27 @@ function createScrollingMessagesHTML(title, messages, speed = 'normal') {
         `<div class="message-item">${message}</div>`
     ).join('');
     
+    // Calculate dynamic speed based on message count for better readability
+    const messageCount = messages.length;
+    let dynamicSpeed = speed;
+    
+    // Auto-adjust speed for large datasets
+    if (messageCount > 500) {
+        dynamicSpeed = 'ultra-slow';
+    } else if (messageCount > 200) {
+        dynamicSpeed = 'very-slow';
+    } else if (messageCount > 100) {
+        dynamicSpeed = 'slow';
+    }
+    
+    // Generate unique ID for this scrolling container
+    const containerId = `scroll-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
     return `
         <div class="scrolling-messages">
-            <h4>${title || 'Scrolling Messages'}</h4>
+            <h4>${title || 'Scrolling Messages'} (${messageCount} entries)</h4>
             <div class="messages-container">
-                <div class="messages-scroll ${speed}">
+                <div class="messages-scroll ${dynamicSpeed}" id="${containerId}" data-message-count="${messageCount}">
                     ${messagesHTML}
                     ${messagesHTML} <!-- Duplicate for seamless scrolling -->
                 </div>
