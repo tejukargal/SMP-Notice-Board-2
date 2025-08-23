@@ -463,6 +463,61 @@ function initializeScrollingAnimations() {
             // Force reflow to ensure animation starts
             scrollContent.offsetHeight;
         }
+        
+        // Add mobile touch events for pause/resume
+        const scrollContentArea = container.querySelector('.scrolling-content-area');
+        if (scrollContentArea) {
+            setupScrollingTouchEvents(scrollContentArea);
+        }
+    });
+}
+
+// Setup touch events for mobile pause/resume functionality
+function setupScrollingTouchEvents(scrollContentArea) {
+    let isPaused = false;
+    let touchStartTime = 0;
+    
+    // Handle touch start
+    scrollContentArea.addEventListener('touchstart', (e) => {
+        touchStartTime = Date.now();
+        e.stopPropagation(); // Prevent interfering with card swiping
+    }, { passive: true });
+    
+    // Handle touch end (tap)
+    scrollContentArea.addEventListener('touchend', (e) => {
+        const touchDuration = Date.now() - touchStartTime;
+        
+        // Only handle quick taps (less than 200ms)
+        if (touchDuration < 200) {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent interfering with card swiping
+            
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                scrollContentArea.classList.add('paused');
+            } else {
+                scrollContentArea.classList.remove('paused');
+            }
+            
+            console.log(`Scrolling messages ${isPaused ? 'paused' : 'resumed'}`);
+        }
+    }, { passive: false });
+    
+    // Handle click for desktop compatibility
+    scrollContentArea.addEventListener('click', (e) => {
+        // Only handle if not on mobile (to avoid double triggering)
+        if (!('ontouchstart' in window)) {
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                scrollContentArea.classList.add('paused');
+            } else {
+                scrollContentArea.classList.remove('paused');
+            }
+            
+            console.log(`Scrolling messages ${isPaused ? 'paused' : 'resumed'}`);
+        }
     });
 }
 
@@ -550,6 +605,12 @@ function createNoticeCard(notice, index) {
         if (deleteBtn) {
             deleteBtn.addEventListener('click', () => deleteNoticeWithSync(notice.id));
         }
+    }
+    
+    // Setup touch events for scrolling messages in this card
+    const scrollContentArea = card.querySelector('.scrolling-content-area');
+    if (scrollContentArea) {
+        setupScrollingTouchEvents(scrollContentArea);
     }
     
     return card;
