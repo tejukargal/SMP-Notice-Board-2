@@ -1242,16 +1242,35 @@ async function testBuiltInConnection() {
     updateSyncStatus('connecting', 'Testing connection...');
     
     try {
-        await makeJsonHostRequest('GET', `/json/${BUILT_IN_SYNC.jsonHostId}`);
+        // First test if remote exists
+        const remoteData = await makeJsonHostRequest('GET', `/json/${BUILT_IN_SYNC.jsonHostId}`);
         updateSyncStatus('connected', 'Auto-sync enabled');
         
-        // Try to sync from remote on startup with retry logic
-        setTimeout(syncFromRemoteWithRetry, 1000);
+        // If we have local notices and remote is empty/invalid, push local data first
+        if (notices.length > 0 && (!remoteData || !remoteData.notices || remoteData.notices.length === 0)) {
+            console.log('🔄 Local data exists but remote is empty - pushing local data to remote');
+            await syncToRemote();
+        } else {
+            // Try to sync from remote on startup with retry logic
+            setTimeout(syncFromRemoteWithRetry, 1000);
+        }
     } catch (error) {
-        updateSyncStatus('error', `Connection failed: ${error.message}`);
-        console.error('Built-in sync connection failed:', error);
-        // Retry connection after 30 seconds
-        setTimeout(testBuiltInConnection, 30000);
+        // If 404, remote doesn't exist - initialize with local data
+        if (error.message.includes('404') && notices.length > 0) {
+            console.log('🔄 Remote not found - initializing with local data');
+            try {
+                await syncToRemote();
+                updateSyncStatus('connected', 'Remote initialized with local data');
+            } catch (initError) {
+                updateSyncStatus('error', 'Failed to initialize remote');
+                console.error('Failed to initialize remote:', initError);
+            }
+        } else {
+            updateSyncStatus('error', `Connection failed: ${error.message}`);
+            console.error('Built-in sync connection failed:', error);
+            // Retry connection after 30 seconds
+            setTimeout(testBuiltInConnection, 30000);
+        }
     }
 }
 
@@ -1312,36 +1331,68 @@ async function syncFromRemote() {
     try {
         const remoteData = await makeJsonHostRequest('GET', `/json/${BUILT_IN_SYNC.jsonHostId}`);
         
-        if (remoteData && remoteData.notices) {
-            notices = remoteData.notices;
+        if (remoteData && remoteData.notices && Array.isArray(remoteData.notices)) {
+            console.log(`📥 Syncing ${remoteData.notices.length} notices from remote`);
             
-            // Reload scrolling messages for all notices that have them enabled
-            console.log('Loading scrolling messages after sync...');
-            let messagesLoaded = false;
-            for (const notice of notices) {
-                if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
-                    try {
-                        console.log(`Loading messages for notice ${notice.id} from ${notice.scrollingMessages.csvFileName}`);
-                        notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName, true); // Force reload
-                        console.log(`Loaded ${notice.scrollingMessages.messages.length} messages for notice ${notice.id}`);
-                        messagesLoaded = true;
-                    } catch (csvError) {
-                        console.warn(`Failed to load CSV messages for notice ${notice.id}:`, csvError);
-                        notice.scrollingMessages.messages = [];
+            // Only update if we actually received valid data
+            if (remoteData.notices.length > 0 || notices.length === 0) {
+                const previousNoticesCount = notices.length;
+                notices = remoteData.notices;
+                
+                // Ensure backward compatibility for all synced notices
+                notices.forEach(notice => {
+                    if (!notice.scrollingMessages) {
+                        notice.scrollingMessages = {
+                            enabled: false,
+                            title: '',
+                            csvFileName: '',
+                            speed: 'auto',
+                            messages: []
+                        };
+                    }
+                    // Handle old scrolling structure
+                    if (notice.scrollingEnabled !== undefined && !notice.scrollingMessages.enabled) {
+                        notice.scrollingMessages.enabled = notice.scrollingEnabled;
+                        notice.scrollingMessages.title = notice.scrollingLabel || '';
+                        notice.scrollingMessages.speed = notice.scrollingSpeed || 'medium';
+                    }
+                });
+                
+                // Reload scrolling messages for all notices that have them enabled
+                console.log('Loading scrolling messages after sync...');
+                for (const notice of notices) {
+                    if (notice.scrollingMessages && notice.scrollingMessages.enabled && notice.scrollingMessages.csvFileName) {
+                        try {
+                            console.log(`Loading messages for notice ${notice.id} from ${notice.scrollingMessages.csvFileName}`);
+                            notice.scrollingMessages.messages = await loadCSVMessages(notice.scrollingMessages.csvFileName, true); // Force reload
+                            console.log(`Loaded ${notice.scrollingMessages.messages.length} messages for notice ${notice.id}`);
+                        } catch (csvError) {
+                            console.warn(`Failed to load CSV messages for notice ${notice.id}:`, csvError);
+                            notice.scrollingMessages.messages = [];
+                        }
                     }
                 }
+                
+                saveLocalNotices();
+                renderNotices();
+                updateNavigation();
+                console.log(`✅ Synced from remote successfully: ${previousNoticesCount} → ${notices.length} notices`);
+            } else {
+                console.log('📭 Remote has empty notices but local has data - skipping sync to prevent data loss');
             }
-            
-            saveLocalNotices();
-            renderNotices();
-            updateNavigation();
-            console.log('Synced from remote successfully with scrolling messages');
+        } else {
+            console.log('📭 No valid notice data found in remote response');
         }
     } catch (error) {
         console.error('Sync from remote failed:', error);
-        // If remote doesn't exist, initialize it with current data
-        if (error.message.includes('404')) {
-            await syncToRemote();
+        // If remote doesn't exist or is empty, initialize it with current local data
+        if (error.message.includes('404') || error.message.includes('not found')) {
+            if (notices.length > 0) {
+                console.log('🔄 Remote not found but local data exists - initializing remote with local data');
+                await syncToRemote();
+            }
+        } else {
+            console.warn('⚠️ Sync failed but keeping local data intact');
         }
     }
 }
@@ -1358,22 +1409,23 @@ function setupAutoSync() {
         // Auto-sync every 2 minutes with improved error handling
         autoSyncInterval = setInterval(async () => {
             try {
-                // First sync to remote (push local changes)
+                // First sync from remote to get any new changes from other devices
+                await syncFromRemote();
+                
+                // Then sync to remote (push local changes) to ensure consistency
                 await syncToRemote();
                 updateSyncStatus('connected', `Last synced: ${new Date().toLocaleTimeString()}`);
                 
-                // Then sync from remote to get any new changes from other devices
-                await syncFromRemote();
                 console.log('Auto-sync cycle completed successfully');
             } catch (error) {
                 console.error('Auto-sync failed:', error);
-                // Try to sync from remote to get latest data
+                // Try to sync from remote to get latest data as fallback
                 try {
                     await syncFromRemote();
                     updateSyncStatus('connected', `Synced from remote: ${new Date().toLocaleTimeString()}`);
                 } catch (syncError) {
                     console.error('Fallback sync from remote also failed:', syncError);
-                    updateSyncStatus('error', 'Sync issues detected');
+                    updateSyncStatus('error', 'Sync issues detected - using local data');
                 }
             }
         }, 2 * 60 * 1000);
@@ -1424,26 +1476,61 @@ async function deleteNoticeWithSync(noticeId) {
 function loadLocalNotices() {
     const saved = localStorage.getItem('smpNotices');
     if (saved) {
-        notices = JSON.parse(saved);
-        // Ensure backward compatibility - add scrollingMessages to existing notices
-        notices.forEach(notice => {
-            if (!notice.scrollingMessages) {
-                notice.scrollingMessages = {
-                    enabled: false,
-                    title: '',
-                    csvFileName: '',
-                    speed: 'auto',
-                    messages: []
-                };
+        try {
+            const parsedNotices = JSON.parse(saved);
+            if (Array.isArray(parsedNotices)) {
+                notices = parsedNotices;
+                console.log(`📂 Loaded ${notices.length} notices from localStorage`);
+                
+                // Ensure backward compatibility - add scrollingMessages to existing notices
+                notices.forEach(notice => {
+                    if (!notice.scrollingMessages) {
+                        notice.scrollingMessages = {
+                            enabled: false,
+                            title: '',
+                            csvFileName: '',
+                            speed: 'auto',
+                            messages: []
+                        };
+                    }
+                    // Handle old structure migration
+                    if (notice.scrollingEnabled !== undefined && !notice.scrollingMessages.enabled) {
+                        notice.scrollingMessages.enabled = notice.scrollingEnabled;
+                        notice.scrollingMessages.title = notice.scrollingLabel || '';
+                        notice.scrollingMessages.speed = notice.scrollingSpeed || 'medium';
+                    }
+                });
+                saveLocalNotices(); // Save updated structure
+            } else {
+                console.warn('⚠️ Invalid notices format in localStorage - starting fresh');
+                notices = [];
             }
-        });
-        saveLocalNotices(); // Save updated structure
+        } catch (error) {
+            console.error('❌ Failed to parse localStorage notices:', error);
+            notices = [];
+        }
+    } else {
+        console.log('📭 No notices found in localStorage');
+        notices = [];
     }
 }
 
 // Save notices to localStorage
 function saveLocalNotices() {
-    localStorage.setItem('smpNotices', JSON.stringify(notices));
+    try {
+        localStorage.setItem('smpNotices', JSON.stringify(notices));
+        console.log(`💾 Saved ${notices.length} notices to localStorage`);
+    } catch (error) {
+        console.error('❌ Failed to save notices to localStorage:', error);
+        // Try to clear some space and retry once
+        try {
+            localStorage.removeItem('tempData'); // Clear any temp data
+            localStorage.setItem('smpNotices', JSON.stringify(notices));
+            console.log('✅ Retry save successful after clearing temp data');
+        } catch (retryError) {
+            console.error('❌ Retry save also failed:', retryError);
+        }
+    }
 }
 
 // Preload CSV files at startup for instant access
