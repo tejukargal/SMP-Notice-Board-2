@@ -474,24 +474,40 @@ function initializeScrollingAnimations() {
     });
 }
 
-// Setup click event for pause/resume functionality
+// Setup touch events for mobile pause/resume functionality
 function setupScrollingTouchEvents(scrollContentArea) {
     let isPaused = false;
 
-    scrollContentArea.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
+    const togglePause = () => {
         isPaused = !isPaused;
-
         if (isPaused) {
             scrollContentArea.classList.add('paused');
         } else {
             scrollContentArea.classList.remove('paused');
         }
-
         console.log(`Scrolling messages ${isPaused ? 'paused' : 'resumed'}`);
-    });
+    };
+
+    if ('ontouchstart' in window) {
+        // Mobile device
+        let touchStartTime = 0;
+        scrollContentArea.addEventListener('touchstart', () => {
+            touchStartTime = Date.now();
+        }, { passive: true });
+
+        scrollContentArea.addEventListener('touchend', (e) => {
+            if (Date.now() - touchStartTime < 300) {
+                e.preventDefault();
+                togglePause();
+            }
+        });
+    } else {
+        // Desktop device
+        scrollContentArea.addEventListener('click', (e) => {
+            e.preventDefault();
+            togglePause();
+        });
+    }
 }
 
 // Sort notices by importance and reassign serial numbers
@@ -526,7 +542,20 @@ function renderNotices() {
         noticeContainer.appendChild(noticeCard);
     });
     
+    setCardBorderColors();
     updateNavDots();
+}
+
+// Set card border color to match header color
+function setCardBorderColors() {
+    const noticeCards = document.querySelectorAll('.notice-card');
+    noticeCards.forEach(card => {
+        const header = card.querySelector('.notice-header');
+        if (header) {
+            const headerColor = window.getComputedStyle(header).backgroundColor;
+            card.style.border = `2px solid ${headerColor}`;
+        }
+    });
 }
 
 // Create individual notice card
@@ -863,8 +892,11 @@ function toggleDarkMode() {
 }
 
 function loadDarkModePreference() {
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    if (isDarkMode) {
+    const darkModePreference = localStorage.getItem('darkMode');
+    if (darkModePreference === 'false') {
+        document.body.classList.remove('dark-mode');
+        darkModeToggle.textContent = '🌙';
+    } else {
         document.body.classList.add('dark-mode');
         darkModeToggle.textContent = '☀️';
     }
