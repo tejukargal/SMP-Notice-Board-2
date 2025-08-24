@@ -1160,31 +1160,6 @@ body.dark-mode {
         -webkit-tap-highlight-color: rgba(52, 152, 219, 0.1);
         position: relative;
     }
-    
-    .scrolling-content-area::before {
-        content: '⏸️ Tap to pause/resume';
-        position: absolute;
-        top: 5px;
-        right: 10px;
-        font-size: 0.7rem;
-        color: rgba(52, 152, 219, 0.7);
-        background: rgba(255, 255, 255, 0.9);
-        padding: 2px 6px;
-        border-radius: 10px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        pointer-events: none;
-        z-index: 1;
-    }
-    
-    .scrolling-content-area:active::before {
-        opacity: 1;
-    }
-    
-    .dark-mode .scrolling-content-area::before {
-        background: rgba(45, 45, 45, 0.9);
-        color: rgba(52, 152, 219, 0.8);
-    }
 }
 
 .csv-mobile-row {
