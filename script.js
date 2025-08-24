@@ -132,6 +132,8 @@ const darkModeToggle = document.getElementById('darkModeToggle');
 const logoutBtn = document.getElementById('logoutBtn');
 const submitBtn = document.getElementById('submitBtn');
 const addNoticeBtn = document.getElementById('addNoticeBtn');
+const addLinkBtn = document.getElementById('addLinkBtn');
+const linksContainer = document.getElementById('linksContainer');
 
 // Form elements
 const noticeContent = document.getElementById('noticeContent');
@@ -589,7 +591,9 @@ function createNoticeCard(notice, index) {
             <div class="notice-content">${notice.content}</div>
             ${notice.scrollingEnabled && notice.scrollingLabel ? 
                 createScrollingTextHTML(getCSVDataForNotice(notice), notice.scrollingLabel, notice.scrollingSpeed) : ''}
-            ${notice.link ? `<a href="${notice.link}" target="_blank" class="notice-link">View Link</a>` : ''}
+            <div class="notice-links">
+                ${notice.links && notice.links.map(link => `<a href="${link.url}" target="_blank" class="notice-link">${link.title}</a>`).join('') || ''}
+            </div>
         </div>
     `;
     
@@ -692,6 +696,9 @@ function setupEventListeners() {
         resetNoticeForm();
     });
 
+    // Add link button
+    addLinkBtn.addEventListener('click', addLinkInput);
+
     // Rich text editor functionality
     setupRichTextEditor();
 
@@ -781,6 +788,16 @@ async function handleNoticeSubmission(e) {
         // Update existing notice
         const noticeIndex = notices.findIndex(n => n.id === editingNoticeId);
         if (noticeIndex !== -1) {
+            const links = [];
+            const linkInputGroups = linksContainer.querySelectorAll('.link-input-group');
+            linkInputGroups.forEach(group => {
+                const title = group.querySelector('.link-title-input').value;
+                const url = group.querySelector('.link-url-input').value;
+                if (title && url) {
+                    links.push({ title, url });
+                }
+            });
+
             notices[noticeIndex] = {
                 ...notices[noticeIndex],
                 title: document.getElementById('noticeTitle').value,
@@ -789,7 +806,7 @@ async function handleNoticeSubmission(e) {
                 priority: document.getElementById('noticePriority').value,
                 importance: noticeImportance.value,
                 category: document.getElementById('noticeCategory').value,
-                link: document.getElementById('noticeLink').value || ''
+                links: links
             };
             // Update scrolling messages for this notice
             await updateNoticeScrollingMessages(editingNoticeId);
@@ -797,7 +814,16 @@ async function handleNoticeSubmission(e) {
         editingNoticeId = null;
         submitBtn.textContent = 'Add Notice';
     } else {
-        // Add new notice - ID will be reassigned during sorting
+        const links = [];
+        const linkInputGroups = linksContainer.querySelectorAll('.link-input-group');
+        linkInputGroups.forEach(group => {
+            const title = group.querySelector('.link-title-input').value;
+            const url = group.querySelector('.link-url-input').value;
+            if (title && url) {
+                links.push({ title, url });
+            }
+        });
+
         const newNotice = {
             id: notices.length + 1,
             title: document.getElementById('noticeTitle').value,
@@ -807,7 +833,7 @@ async function handleNoticeSubmission(e) {
             importance: noticeImportance.value,
             category: document.getElementById('noticeCategory').value,
             date: new Date().toISOString().split('T')[0],
-            link: document.getElementById('noticeLink').value || '',
+            links: links,
             scrollingMessages: {
                 enabled: false,
                 title: '',
@@ -921,6 +947,36 @@ function updateAdminButtons(show) {
     }); // End requestAnimationFrame
 }
 
+// Add a new link input group to the form
+function addLinkInput() {
+    const linkInputGroup = document.createElement('div');
+    linkInputGroup.className = 'link-input-group';
+
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.placeholder = 'Link Title';
+    titleInput.className = 'link-title-input';
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.placeholder = 'Link URL';
+    urlInput.className = 'link-url-input';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-link-btn';
+    removeBtn.textContent = '-';
+    removeBtn.addEventListener('click', () => {
+        linkInputGroup.remove();
+    });
+
+    linkInputGroup.appendChild(titleInput);
+    linkInputGroup.appendChild(urlInput);
+    linkInputGroup.appendChild(removeBtn);
+
+    linksContainer.appendChild(linkInputGroup);
+}
+
 // Admin logout function
 function handleLogout() {
     isAdminLoggedIn = false;
@@ -946,7 +1002,17 @@ function editNotice(noticeId) {
         document.getElementById('noticePriority').value = notice.priority;
         noticeImportance.value = notice.importance || 'Normal';
         document.getElementById('noticeCategory').value = notice.category;
-        document.getElementById('noticeLink').value = notice.link || '';
+        
+        linksContainer.innerHTML = '';
+        if (notice.links) {
+            notice.links.forEach(link => {
+                addLinkInput();
+                const linkInputGroups = linksContainer.querySelectorAll('.link-input-group');
+                const lastGroup = linkInputGroups[linkInputGroups.length - 1];
+                lastGroup.querySelector('.link-title-input').value = link.title;
+                lastGroup.querySelector('.link-url-input').value = link.url;
+            });
+        }
         
         // Load scrolling message settings for this notice
         loadNoticeScrollingSettings(notice);
@@ -981,6 +1047,7 @@ function resetNoticeForm() {
     submitBtn.textContent = 'Add Notice';
     noticeForm.reset();
     noticeContent.innerHTML = '';
+    linksContainer.innerHTML = '';
     
     // Reset scrolling messages fields
     const enableCheckbox = document.getElementById('enableScrollingMessages');
