@@ -371,10 +371,15 @@ body.dark-mode {
     line-height: 1.6;
     font-size: 1rem;
     flex: 1;
+    text-align: justify;
 }
 
 .dark-mode .notice-content {
     color: #e0e0e0;
+}
+
+.dark-mode .navigation {
+    background: #1a1a1a;
 }
 
 .notice-links {
@@ -420,6 +425,10 @@ body.dark-mode {
     flex-direction: column;
     align-items: center;
     gap: 0.3rem;
+    position: sticky;
+    bottom: 0;
+    background: #f8f9fa;
+    z-index: 1;
 }
 
 .nav-dots {
