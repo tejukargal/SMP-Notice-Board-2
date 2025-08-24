@@ -639,7 +639,13 @@ function updateNavDots() {
         numberEl.className = `nav-number ${index === currentNoticeIndex ? 'active' : ''}`;
         numberEl.textContent = `${index + 1}`;
         numberEl.title = `Card ${index + 1}: ${notice.title}`;
-        numberEl.addEventListener('click', () => scrollToNotice(index));
+        numberEl.addEventListener('click', () => {
+            const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
+            noticeContainer.scrollTo({
+                left: index * cardWidth,
+                behavior: 'smooth'
+            });
+        });
         numbersContainer.appendChild(numberEl);
     });
     
@@ -652,23 +658,7 @@ function updateNavDots() {
     navDots.appendChild(totalIndicator);
 }
 
-// Scroll to specific notice with enhanced smoothness
-function scrollToNotice(index) {
-    const noticeCards = document.querySelectorAll('.notice-card');
-    if (noticeCards[index] && index !== currentNoticeIndex) {
-        // Use requestAnimationFrame for smoother transitions
-        requestAnimationFrame(() => {
-            noticeCards[index].scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'center'
-            });
-            
-            currentNoticeIndex = index;
-            updateNavigation();
-        });
-    }
-}
+
 
 // Update navigation state
 function updateNavigation() {
@@ -739,118 +729,11 @@ function setupEventListeners() {
         });
     }
 
-    // Enhanced touch/swipe events for mobile - simplified and glitch-free
-    let startX = 0;
-    let startY = 0;
-    let startTime = 0;
-    let isScrolling = false;
-    let touchStarted = false;
-    let swipeThreshold = 50; // Minimum distance for swipe
-    let timeThreshold = 300; // Maximum time for swipe
+    // Simplified swipe handling - relying on CSS scroll snap
+    noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 150));
 
-    noticeContainer.addEventListener('touchstart', (e) => {
-        // Don't interfere with button clicks and scrolling messages
-        if (e.target.classList.contains('edit-btn') || 
-            e.target.classList.contains('delete-btn') ||
-            e.target.closest('.edit-btn') ||
-            e.target.closest('.delete-btn') ||
-            e.target.closest('.scrolling-messages') ||
-            e.target.closest('.scrolling-content-area')) {
-            return;
-        }
-        
-        touchStarted = true;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-        startTime = Date.now();
-        isScrolling = false;
-    }, { passive: true });
+    noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 150));
 
-    noticeContainer.addEventListener('touchmove', (e) => {
-        if (!touchStarted) return;
-        
-        // Don't interfere with button interactions and scrolling messages
-        if (e.target.classList.contains('edit-btn') || 
-            e.target.classList.contains('delete-btn') ||
-            e.target.closest('.edit-btn') ||
-            e.target.closest('.delete-btn') ||
-            e.target.closest('.scrolling-messages') ||
-            e.target.closest('.scrolling-content-area')) {
-            return;
-        }
-        
-        const currentX = e.touches[0].clientX;
-        const currentY = e.touches[0].clientY;
-        const diffX = Math.abs(currentX - startX);
-        const diffY = Math.abs(currentY - startY);
-
-        // Determine scrolling direction early
-        if (!isScrolling && (diffX > 10 || diffY > 10)) {
-            isScrolling = diffY > diffX;
-        }
-    }, { passive: true });
-
-    noticeContainer.addEventListener('touchend', (e) => {
-        if (!touchStarted) return;
-        touchStarted = false;
-
-        // Don't interfere with button interactions and scrolling messages
-        if (e.target.classList.contains('edit-btn') || 
-            e.target.classList.contains('delete-btn') ||
-            e.target.closest('.edit-btn') ||
-            e.target.closest('.delete-btn') ||
-            e.target.closest('.scrolling-messages') ||
-            e.target.closest('.scrolling-content-area')) {
-            return;
-        }
-
-        const endX = e.changedTouches[0].clientX;
-        const diffX = startX - endX;
-        const timeDiff = Date.now() - startTime;
-
-        // Only handle horizontal swipes (ignore vertical scrolling)
-        if (!isScrolling && Math.abs(diffX) > swipeThreshold && timeDiff < timeThreshold) {
-            if (diffX > 0 && currentNoticeIndex < notices.length - 1) {
-                // Swipe left - next notice
-                scrollToNotice(currentNoticeIndex + 1);
-            } else if (diffX < 0 && currentNoticeIndex > 0) {
-                // Swipe right - previous notice  
-                scrollToNotice(currentNoticeIndex - 1);
-            }
-        }
-    });
-
-    // Mouse events for desktop swipe simulation
-    let mouseStartX = 0;
-    let isMouseDown = false;
-
-    noticeContainer.addEventListener('mousedown', (e) => {
-        isMouseDown = true;
-        mouseStartX = e.clientX;
-    });
-
-    noticeContainer.addEventListener('mouseup', (e) => {
-        if (!isMouseDown) return;
-        isMouseDown = false;
-
-        const diffX = mouseStartX - e.clientX;
-        
-        if (Math.abs(diffX) > 50) {
-            if (diffX > 0 && currentNoticeIndex < notices.length - 1) {
-                scrollToNotice(currentNoticeIndex + 1);
-            } else if (diffX < 0 && currentNoticeIndex > 0) {
-                scrollToNotice(currentNoticeIndex - 1);
-            }
-        }
-    });
-
-    noticeContainer.addEventListener('mouseleave', () => {
-        isMouseDown = false;
-    });
-
-    // Scroll event to update current notice
-    noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 100));
-    
     // Add window focus event to sync when switching devices
     window.addEventListener('focus', async () => {
         if (BUILT_IN_SYNC.enabled && BUILT_IN_SYNC.jsonHostId) {
@@ -944,31 +827,19 @@ async function handleNoticeSubmission(e) {
     adminPanel.style.display = 'none';
     
     // Scroll to the first notice after sorting
-    setTimeout(() => scrollToNotice(0), 100);
+    setTimeout(() => {
+        noticeContainer.scrollTo({ left: 0, behavior: 'smooth' });
+    }, 100);
 }
 
 // Update current notice index based on scroll position
 function updateCurrentNoticeOnScroll() {
-    const containerRect = noticeContainer.getBoundingClientRect();
-    const containerCenter = containerRect.left + containerRect.width / 2;
-    
-    const noticeCards = document.querySelectorAll('.notice-card');
-    let closestIndex = 0;
-    let closestDistance = Infinity;
-    
-    noticeCards.forEach((card, index) => {
-        const cardRect = card.getBoundingClientRect();
-        const cardCenter = cardRect.left + cardRect.width / 2;
-        const distance = Math.abs(cardCenter - containerCenter);
-        
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = index;
-        }
-    });
-    
-    if (closestIndex !== currentNoticeIndex) {
-        currentNoticeIndex = closestIndex;
+    const scrollLeft = noticeContainer.scrollLeft;
+    const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
+    const newIndex = Math.round(scrollLeft / cardWidth);
+
+    if (newIndex !== currentNoticeIndex) {
+        currentNoticeIndex = newIndex;
         updateNavigation();
     }
 }
@@ -1094,7 +965,11 @@ function deleteNotice(noticeId) {
         if (currentNoticeIndex >= notices.length) {
             currentNoticeIndex = notices.length - 1;
             if (currentNoticeIndex >= 0) {
-                setTimeout(() => scrollToNotice(currentNoticeIndex), 100);
+                const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
+                noticeContainer.scrollTo({
+                    left: currentNoticeIndex * cardWidth,
+                    behavior: 'smooth'
+                });
             }
         }
     }
@@ -1456,7 +1331,11 @@ async function deleteNoticeWithSync(noticeId) {
         if (currentNoticeIndex >= notices.length) {
             currentNoticeIndex = notices.length - 1;
             if (currentNoticeIndex >= 0) {
-                setTimeout(() => scrollToNotice(currentNoticeIndex), 100);
+                const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
+                noticeContainer.scrollTo({
+                    left: currentNoticeIndex * cardWidth,
+                    behavior: 'smooth'
+                });
             }
         }
         
