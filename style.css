@@ -1353,32 +1353,33 @@ body.dark-mode {
     }
     
     .scrolling-label {
-        padding: 0.4rem 0;
+        padding: 0.4rem 1rem;
         font-size: 0.85rem;
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
         gap: 0.25rem;
+        justify-content: space-between;
     }
     
     .scrolling-count {
         font-size: 0.75rem;
-        align-self: flex-end;
+        align-self: center;
     }
     
     .scrolling-content-area {
-        height: 140px;
-        padding: 0.25rem 0;
+        height: 180px;
+        padding: 0.5rem 0;
     }
     
     .csv-mobile-row {
-        padding: 0.6rem 0.25rem;
-        min-height: 38px;
-        margin-bottom: 1px;
+        padding: 0.75rem 0.5rem;
+        min-height: 44px;
+        margin-bottom: 2px;
     }
     
     .csv-column {
-        padding: 0 0.4rem;
-        font-size: 0.82rem;
+        padding: 0 0.6rem;
+        font-size: 0.88rem;
     }
     
     /* Adjust column widths for mobile */
@@ -1395,17 +1396,17 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .scrolling-content-area {
-        height: 120px;
+        height: 160px;
     }
     
     .csv-mobile-row {
-        padding: 0.5rem 0.2rem;
-        min-height: 36px;
+        padding: 0.6rem 0.4rem;
+        min-height: 40px;
     }
     
     .csv-column {
-        font-size: 0.78rem;
-        padding: 0 0.3rem;
+        font-size: 0.82rem;
+        padding: 0 0.4rem;
     }
 }
 
@@ -1581,18 +1582,18 @@ body.dark-mode {
     /* Optimize scrolling messages for mobile */
     .scrolling-message-inline,
     .scrolling-messages {
-        max-height: 140px;
+        max-height: 200px;
         overflow: hidden;
     }
     
     .scrolling-content-area {
-        height: 120px !important;
-        max-height: 120px;
+        height: 180px !important;
+        max-height: 180px;
     }
     
     .messages-container {
-        height: 120px !important;
-        max-height: 120px;
+        height: 180px !important;
+        max-height: 180px;
     }
     
     /* Mobile navigation styling */
