@@ -474,28 +474,34 @@ body.dark-mode {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    position: sticky;
-    bottom: 0;
-    background: var(--card-gradient);
-    border: 1px solid var(--border);
-    border-bottom: none;
-    border-radius: 14px 14px 0 0;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    margin: 0 auto;
-    max-width: 1000px;
-    backdrop-filter: blur(10px);
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    border: none;
+    border-radius: 20px;
+    z-index: 100;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+}
+
+.navigation.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+    pointer-events: none;
 }
 
 .nav-dots {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    background: var(--input-bg);
+    gap: 0.5rem;
+    background: rgba(11, 16, 32, 0.9);
     padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--input-border);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
 }
 
 .nav-numbers-container {
@@ -505,76 +511,42 @@ body.dark-mode {
 }
 
 .nav-number {
-    min-width: 36px;
-    height: 36px;
+    min-width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: var(--card);
-    border: 1px solid var(--input-border);
-    color: var(--text);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     transition: all 0.3s ease;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-number::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(92, 124, 250, 0.1), rgba(70, 214, 255, 0.1));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 50%;
-}
-
-.nav-number:hover::before {
-    opacity: 1;
 }
 
 .nav-number:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-    border-color: #5c7cfa;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: scale(1.1);
 }
 
 .nav-number.active {
     background: linear-gradient(135deg, #5c7cfa, #46d6ff);
     color: #0b1020;
     font-weight: 700;
-    box-shadow: 0 6px 20px rgba(92, 124, 250, 0.4);
-    border-color: #5c7cfa;
-    transform: scale(1.1);
-}
-
-.nav-number.active::before {
-    display: none;
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(92, 124, 250, 0.5);
 }
 
 .nav-total {
-    color: var(--text);
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 4px 12px;
-    background: rgba(92, 124, 250, 0.1);
-    border-radius: 12px;
-    border: 1px solid rgba(92, 124, 250, 0.2);
+    display: none;
 }
 
 .swipe-indicator {
-    color: var(--muted);
-    font-size: 0.8rem;
-    animation: pulse 2s infinite;
-    font-weight: 500;
+    display: none;
 }
 
 @keyframes pulse {
@@ -1587,9 +1559,9 @@ body.dark-mode {
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: 100vw;
-        max-width: 100vw;
-        margin: 0;
+        min-width: calc(100vw - 16px);
+        max-width: calc(100vw - 16px);
+        margin: 0 8px;
         max-height: calc(100vh - 100px);
         overflow-y: auto;
         flex-shrink: 0;
@@ -1627,9 +1599,8 @@ body.dark-mode {
     
     /* Mobile navigation styling */
     .navigation {
-        padding: 8px 12px;
-        margin: 0;
-        border-radius: 12px 12px 0 0;
+        padding: 8px;
+        bottom: 10px;
     }
     
     .nav-dots {
@@ -1638,14 +1609,9 @@ body.dark-mode {
     }
     
     .nav-number {
-        min-width: 32px;
-        height: 32px;
-        font-size: 0.85rem;
-    }
-    
-    .nav-total {
-        font-size: 0.75rem;
-        padding: 3px 8px;
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
     }
     
     /* Optimize button interactions */

@@ -117,6 +117,10 @@ let notices = [
     }
 ];
 
+// Navigation variables
+let navigationHideTimer = null;
+let isNavigationVisible = true;
+
 // DOM elements
 const noticeContainer = document.getElementById('noticeContainer');
 const navDots = document.getElementById('navDots');
@@ -657,6 +661,9 @@ function updateNavDots() {
                     left: index * scrollDistance,
                     behavior: 'smooth'
                 });
+                
+                // Reset navigation timer on manual navigation
+                resetNavigationTimer();
             }
         });
         numbersContainer.appendChild(numberEl);
@@ -748,7 +755,19 @@ function setupEventListeners() {
     // Simplified swipe handling - relying on CSS scroll snap
     noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 150));
 
-    noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 150));
+    // Add touch listeners for navigation control
+    noticeContainer.addEventListener('touchstart', resetNavigationTimer);
+    noticeContainer.addEventListener('touchmove', resetNavigationTimer);
+    
+    // Add keyboard listeners
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            resetNavigationTimer();
+        }
+    });
+    
+    // Initialize navigation timer
+    resetNavigationTimer();
 
     // Add window focus event to sync when switching devices
     window.addEventListener('focus', async () => {
@@ -869,6 +888,35 @@ async function handleNoticeSubmission(e) {
     }, 100);
 }
 
+// Navigation auto-hide functions
+function showNavigation() {
+    const navigation = document.querySelector('.navigation');
+    if (navigation) {
+        navigation.classList.remove('hidden');
+        isNavigationVisible = true;
+        
+        // Clear existing timer
+        if (navigationHideTimer) {
+            clearTimeout(navigationHideTimer);
+        }
+        
+        // Set new hide timer
+        navigationHideTimer = setTimeout(hideNavigation, 3000);
+    }
+}
+
+function hideNavigation() {
+    const navigation = document.querySelector('.navigation');
+    if (navigation) {
+        navigation.classList.add('hidden');
+        isNavigationVisible = false;
+    }
+}
+
+function resetNavigationTimer() {
+    showNavigation();
+}
+
 // Update current notice index based on scroll position
 function updateCurrentNoticeOnScroll() {
     const scrollLeft = noticeContainer.scrollLeft;
@@ -882,6 +930,7 @@ function updateCurrentNoticeOnScroll() {
         if (newIndex !== currentNoticeIndex && newIndex >= 0 && newIndex < notices.length) {
             currentNoticeIndex = newIndex;
             updateNavigation();
+            resetNavigationTimer(); // Show navigation on scroll
         }
     }
 }
