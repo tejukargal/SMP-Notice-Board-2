@@ -588,7 +588,7 @@ function createNoticeCard(notice, index) {
                 <span class="course-tag">${notice.course}</span>
                 <span class="category-tag">${notice.category}</span>
             </div>
-            <div class="notice-content">${notice.content}</div>
+            <div class="notice-content" style="font-size: ${notice.fontSize || '16px'};">${notice.content}</div>
             ${notice.scrollingEnabled && notice.scrollingLabel ? 
                 createScrollingTextHTML(getCSVDataForNotice(notice), notice.scrollingLabel, notice.scrollingSpeed) : ''}
             <div class="notice-links">
@@ -806,6 +806,7 @@ async function handleNoticeSubmission(e) {
                 priority: document.getElementById('noticePriority').value,
                 importance: noticeImportance.value,
                 category: document.getElementById('noticeCategory').value,
+                fontSize: document.getElementById('noticeFontSize').value,
                 links: links
             };
             // Update scrolling messages for this notice
@@ -832,6 +833,7 @@ async function handleNoticeSubmission(e) {
             priority: document.getElementById('noticePriority').value,
             importance: noticeImportance.value,
             category: document.getElementById('noticeCategory').value,
+            fontSize: document.getElementById('noticeFontSize').value,
             date: new Date().toISOString().split('T')[0],
             links: links,
             scrollingMessages: {
@@ -887,18 +889,28 @@ function debounce(func, wait) {
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDarkMode = document.body.classList.contains('dark-mode');
-    darkModeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+    const iconSpan = darkModeToggle.querySelector('.btn-icon');
+    const textSpan = darkModeToggle.querySelector('.btn-text');
+    
+    if (iconSpan) iconSpan.textContent = isDarkMode ? '☀️' : '🌙';
+    if (textSpan) textSpan.textContent = isDarkMode ? 'Light' : 'Dark';
+    
     localStorage.setItem('darkMode', isDarkMode);
 }
 
 function loadDarkModePreference() {
     const darkModePreference = localStorage.getItem('darkMode');
+    const iconSpan = darkModeToggle.querySelector('.btn-icon');
+    const textSpan = darkModeToggle.querySelector('.btn-text');
+    
     if (darkModePreference === 'false') {
         document.body.classList.remove('dark-mode');
-        darkModeToggle.textContent = '🌙';
+        if (iconSpan) iconSpan.textContent = '🌙';
+        if (textSpan) textSpan.textContent = 'Dark';
     } else {
         document.body.classList.add('dark-mode');
-        darkModeToggle.textContent = '☀️';
+        if (iconSpan) iconSpan.textContent = '☀️';
+        if (textSpan) textSpan.textContent = 'Light';
     }
 }
 

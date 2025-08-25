@@ -4,17 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMP Notice Board</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-mode">
     <div class="app-container">
         <header class="header">
-            <h1>SMP Notice Board</h1>
-            <div class="header-controls">
-                <button id="darkModeToggle" class="dark-mode-btn">🌙</button>
-                <button id="addNoticeBtn" class="add-notice-btn" style="display: none;">+ Add Notice</button>
-                <button id="logoutBtn" class="logout-btn" style="display: none;">Logout</button>
-                <button id="adminBtn" class="admin-btn">Admin</button>
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>SMP Notice Board</h1>
+                </div>
+                <div class="header-controls">
+                    <button id="darkModeToggle" class="control-btn dark-mode-btn">
+                        <span class="btn-icon">🌙</span>
+                        <span class="btn-text">Dark</span>
+                    </button>
+                    <button id="addNoticeBtn" class="control-btn add-notice-btn" style="display: none;">
+                        <span class="btn-icon">+</span>
+                        <span class="btn-text">Add Notice</span>
+                    </button>
+                    <button id="logoutBtn" class="control-btn logout-btn" style="display: none;">
+                        <span class="btn-icon">↗</span>
+                        <span class="btn-text">Logout</span>
+                    </button>
+                    <button id="adminBtn" class="control-btn admin-btn">
+                        <span class="btn-icon">⚙</span>
+                        <span class="btn-text">Admin</span>
+                    </button>
+                </div>
             </div>
         </header>
         
@@ -73,6 +91,12 @@
                         <option value="Memo">Memo</option>
                         <option value="Result">Result</option>
                         <option value="Link">Useful Link</option>
+                    </select>
+                    <select id="noticeFontSize">
+                        <option value="16px">Normal Font</option>
+                        <option value="18px">Medium Font</option>
+                        <option value="20px">Large Font</option>
+                        <option value="14px">Small Font</option>
                     </select>
                 </div>
                 
