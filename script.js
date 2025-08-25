@@ -564,23 +564,29 @@ function setCardBorderColors() {
     });
 }
 
-// Create individual notice card
+// Create individual notice card (compact metric style)
 function createNoticeCard(notice, index) {
-    console.log(`📋 Creating card for notice: "${notice.title}", scrollingEnabled: ${notice.scrollingEnabled}, scrollingLabel: "${notice.scrollingLabel}"`);
+    console.log(`📋 Creating metric card for notice: "${notice.title}"`);
     
     const card = document.createElement('div');
     card.className = 'notice-card';
+    card.dataset.noticeId = notice.id;
+    
+    // Create truncated content for preview
+    const textContent = notice.content.replace(/<[^>]*>/g, ''); // Strip HTML tags
+    const truncatedContent = textContent.length > 80 ? textContent.substring(0, 80) + '...' : textContent;
+    
     card.innerHTML = `
         <div class="notice-header">
             <div class="notice-header-left">
                 <div class="notice-number">No. ${notice.id}</div>
-                <h2 class="notice-title">${notice.title}</h2>
+                <h3 class="notice-title">${notice.title}</h3>
             </div>
             <div class="notice-header-right">
                 <div class="notice-header-right-top">
                     ${isAdminLoggedIn ? `
-                        <button class="edit-btn" title="Edit Notice">✏️</button>
-                        <button class="delete-btn" title="Delete Notice">🗑️</button>
+                        <button class="edit-btn" title="Edit Notice" onclick="event.stopPropagation(); editNotice(${notice.id})">✏️</button>
+                        <button class="delete-btn" title="Delete Notice" onclick="event.stopPropagation(); deleteNoticeWithSync(${notice.id})">🗑️</button>
                     ` : ''}
                     <span class="priority-tag priority-${notice.priority.toLowerCase()}">${notice.priority}</span>
                 </div>
@@ -594,34 +600,12 @@ function createNoticeCard(notice, index) {
                 <span class="course-tag">${notice.course}</span>
                 <span class="category-tag">${notice.category}</span>
             </div>
-            <div class="notice-content" style="font-size: ${notice.fontSize || '16px'};">${notice.content}</div>
-            ${notice.scrollingEnabled && notice.scrollingLabel ? 
-                createScrollingTextHTML(getCSVDataForNotice(notice), notice.scrollingLabel, notice.scrollingSpeed) : ''}
-            <div class="notice-links">
-                ${notice.links && notice.links.map(link => `<a href="${link.url}" target="_blank" class="notice-link">${link.title}</a>`).join('') || ''}
-            </div>
+            <div class="notice-content">${truncatedContent}</div>
         </div>
     `;
     
-    // Add event listeners for edit/delete buttons if admin is logged in
-    if (isAdminLoggedIn) {
-        const editBtn = card.querySelector('.edit-btn');
-        const deleteBtn = card.querySelector('.delete-btn');
-        
-        if (editBtn) {
-            editBtn.addEventListener('click', () => editNotice(notice.id));
-        }
-        
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', () => deleteNoticeWithSync(notice.id));
-        }
-    }
-    
-    // Setup touch events for scrolling messages in this card
-    const scrollContentArea = card.querySelector('.scrolling-content-area');
-    if (scrollContentArea) {
-        setupScrollingTouchEvents(scrollContentArea);
-    }
+    // Add click event to open popup
+    card.addEventListener('click', () => openNoticePopup(notice));
     
     return card;
 }
@@ -636,45 +620,106 @@ function formatDate(dateString) {
     });
 }
 
-// Update navigation with card numbers instead of dots
-function updateNavDots() {
-    navDots.innerHTML = '';
+// Open notice popup with full details
+function openNoticePopup(notice) {
+    const popup = document.getElementById('noticePopup');
+    const popupTitle = document.getElementById('popupNoticeTitle');
+    const popupContent = document.getElementById('popupNoticeContent');
+    const popupDate = document.getElementById('popupNoticeDate');
+    const popupCourseTag = document.getElementById('popupCourseTag');
+    const popupCategoryTag = document.getElementById('popupCategoryTag');
+    const popupPriorityTag = document.getElementById('popupPriorityTag');
+    const popupImportanceTag = document.getElementById('popupImportanceTag');
+    const popupScrollingContent = document.getElementById('popupScrollingContent');
+    const popupLinks = document.getElementById('popupNoticeLinks');
+    const popupAdminControls = document.getElementById('popupAdminControls');
     
-    // Create card numbers container
-    const numbersContainer = document.createElement('div');
-    numbersContainer.className = 'nav-numbers-container';
+    // Fill popup with notice data
+    popupTitle.textContent = notice.title;
+    popupContent.innerHTML = notice.content;
+    popupContent.style.fontSize = notice.fontSize || '16px';
+    popupDate.textContent = formatDate(notice.date);
     
-    notices.forEach((notice, index) => {
-        const numberEl = document.createElement('div');
-        numberEl.className = `nav-number ${index === currentNoticeIndex ? 'active' : ''}`;
-        numberEl.textContent = `${index + 1}`;
-        numberEl.title = `Card ${index + 1}: ${notice.title}`;
-        numberEl.addEventListener('click', () => {
-            currentNoticeIndex = index;
-            scrollToCard(index);
-            updateNavigation();
-            resetNavigationTimer();
-        });
-        numbersContainer.appendChild(numberEl);
-    });
+    // Set tags
+    popupCourseTag.textContent = notice.course;
+    popupCategoryTag.textContent = notice.category;
+    popupPriorityTag.textContent = notice.priority;
+    popupPriorityTag.className = `priority-tag priority-${notice.priority.toLowerCase()}`;
     
-    // Add total count indicator
-    const totalIndicator = document.createElement('div');
-    totalIndicator.className = 'nav-total';
-    totalIndicator.textContent = `/ ${notices.length}`;
+    // Set importance tag
+    popupImportanceTag.textContent = notice.importance || 'Normal';
     
-    navDots.appendChild(numbersContainer);
-    navDots.appendChild(totalIndicator);
+    // Handle scrolling content
+    if (notice.scrollingEnabled && notice.scrollingLabel) {
+        popupScrollingContent.innerHTML = createScrollingTextHTML(
+            getCSVDataForNotice(notice), 
+            notice.scrollingLabel, 
+            notice.scrollingSpeed
+        );
+        // Initialize scrolling animations
+        setTimeout(() => initializeScrollingAnimations(), 100);
+    } else {
+        popupScrollingContent.innerHTML = '';
+    }
+    
+    // Handle links
+    if (notice.links && notice.links.length > 0) {
+        popupLinks.innerHTML = notice.links.map(link => 
+            `<a href="${link.url}" target="_blank" class="notice-link">${link.title}</a>`
+        ).join('');
+    } else {
+        popupLinks.innerHTML = '';
+    }
+    
+    // Show/hide admin controls
+    if (isAdminLoggedIn) {
+        popupAdminControls.style.display = 'flex';
+        
+        // Update event listeners for popup admin buttons
+        const popupEditBtn = document.getElementById('popupEditBtn');
+        const popupDeleteBtn = document.getElementById('popupDeleteBtn');
+        
+        popupEditBtn.onclick = () => {
+            closeNoticePopup();
+            editNotice(notice.id);
+        };
+        
+        popupDeleteBtn.onclick = () => {
+            closeNoticePopup();
+            deleteNoticeWithSync(notice.id);
+        };
+    } else {
+        popupAdminControls.style.display = 'none';
+    }
+    
+    // Show popup
+    popup.style.display = 'flex';
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    console.log(`📋 Opened popup for notice: "${notice.title}"`);
 }
 
+// Close notice popup
+function closeNoticePopup() {
+    const popup = document.getElementById('noticePopup');
+    popup.style.display = 'none';
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+    
+    console.log('📋 Closed notice popup');
+}
 
+// Update navigation - now just a placeholder since we use grid layout
+function updateNavDots() {
+    // Grid layout doesn't need navigation dots
+}
 
-// Update navigation state
+// Update navigation state - now just a placeholder
 function updateNavigation() {
-    const numbers = document.querySelectorAll('.nav-number');
-    numbers.forEach((number, index) => {
-        number.classList.toggle('active', index === currentNoticeIndex);
-    });
+    // Grid layout doesn't need navigation state updates
 }
 
 // Setup event listeners
@@ -703,6 +748,28 @@ function setupEventListeners() {
 
     // Add link button
     addLinkBtn.addEventListener('click', addLinkInput);
+
+    // Popup close button
+    const closePopupBtn = document.getElementById('closePopup');
+    closePopupBtn.addEventListener('click', closeNoticePopup);
+
+    // Close popup when clicking outside content
+    const noticePopup = document.getElementById('noticePopup');
+    noticePopup.addEventListener('click', (e) => {
+        if (e.target === noticePopup) {
+            closeNoticePopup();
+        }
+    });
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const popup = document.getElementById('noticePopup');
+            if (popup.style.display === 'flex') {
+                closeNoticePopup();
+            }
+        }
+    });
 
     // Rich text editor functionality
     setupRichTextEditor();
@@ -741,54 +808,7 @@ function setupEventListeners() {
         });
     }
 
-    // Enhanced swipe handling for mobile
-    let touchStartX = 0;
-    let touchEndX = 0;
-    let isScrolling = false;
-
-    noticeContainer.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-        isScrolling = false;
-        resetNavigationTimer();
-    }, { passive: true });
-
-    noticeContainer.addEventListener('touchmove', (e) => {
-        if (window.innerWidth <= 768) {
-            const touchX = e.changedTouches[0].screenX;
-            const diffX = touchStartX - touchX;
-            
-            // Only prevent default if we're actually swiping horizontally
-            if (Math.abs(diffX) > 10 && !isScrolling) {
-                e.preventDefault();
-            }
-        }
-        resetNavigationTimer();
-    }, { passive: false });
-
-    noticeContainer.addEventListener('touchend', (e) => {
-        if (window.innerWidth <= 768) {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }
-        resetNavigationTimer();
-    }, { passive: true });
-
-    // Also keep the scroll event for non-touch devices
-    noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 150));
-    
-    // Add keyboard listeners
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') {
-            goToPreviousCard();
-            resetNavigationTimer();
-        } else if (e.key === 'ArrowRight') {
-            goToNextCard();
-            resetNavigationTimer();
-        }
-    });
-    
-    // Initialize navigation timer
-    resetNavigationTimer();
+    // Remove old horizontal scrolling event listeners since we now use grid layout
 
     // Add window focus event to sync when switching devices
     window.addEventListener('focus', async () => {
@@ -903,123 +923,10 @@ async function handleNoticeSubmission(e) {
     resetNoticeForm();
     adminPanel.style.display = 'none';
     
-    // Scroll to the first notice after sorting
-    setTimeout(() => {
-        noticeContainer.scrollTo({ left: 0, behavior: 'smooth' });
-    }, 100);
+    // No need to scroll since we're using grid layout now
 }
 
-// Navigation auto-hide functions
-function showNavigation() {
-    const navigation = document.querySelector('.navigation');
-    if (navigation) {
-        navigation.classList.remove('hidden');
-        isNavigationVisible = true;
-        
-        // Clear existing timer
-        if (navigationHideTimer) {
-            clearTimeout(navigationHideTimer);
-        }
-        
-        // Set new hide timer
-        navigationHideTimer = setTimeout(hideNavigation, 3000);
-    }
-}
-
-function hideNavigation() {
-    const navigation = document.querySelector('.navigation');
-    if (navigation) {
-        navigation.classList.add('hidden');
-        isNavigationVisible = false;
-    }
-}
-
-function resetNavigationTimer() {
-    showNavigation();
-}
-
-// Handle swipe gestures on mobile
-function handleSwipe() {
-    const swipeThreshold = 50; // Minimum swipe distance
-    const diff = touchStartX - touchEndX;
-
-    if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-            // Swipe left - next card
-            goToNextCard();
-        } else {
-            // Swipe right - previous card
-            goToPreviousCard();
-        }
-    } else {
-        // Not enough swipe distance, snap back to current card
-        snapToCurrentCard();
-    }
-}
-
-// Go to next card
-function goToNextCard() {
-    if (currentNoticeIndex < notices.length - 1) {
-        currentNoticeIndex++;
-        scrollToCard(currentNoticeIndex);
-        updateNavigation();
-    }
-}
-
-// Go to previous card
-function goToPreviousCard() {
-    if (currentNoticeIndex > 0) {
-        currentNoticeIndex--;
-        scrollToCard(currentNoticeIndex);
-        updateNavigation();
-    }
-}
-
-// Snap to current card (used when swipe is not enough to change card)
-function snapToCurrentCard() {
-    scrollToCard(currentNoticeIndex);
-}
-
-// Scroll to a specific card
-function scrollToCard(index) {
-    const cardWidth = noticeContainer.offsetWidth; // Use container width for mobile
-    noticeContainer.scrollTo({
-        left: index * cardWidth,
-        behavior: 'smooth'
-    });
-}
-
-// Update current notice index based on scroll position
-function updateCurrentNoticeOnScroll() {
-    const scrollLeft = noticeContainer.scrollLeft;
-    const card = noticeContainer.querySelector('.notice-card');
-    
-    if (card) {
-        const isMobile = window.innerWidth <= 768;
-        const scrollWidth = isMobile ? noticeContainer.offsetWidth : card.offsetWidth;
-        // Use Math.floor for more precise detection on mobile
-        const newIndex = Math.floor((scrollLeft + scrollWidth / 2) / scrollWidth);
-
-        if (newIndex !== currentNoticeIndex && newIndex >= 0 && newIndex < notices.length) {
-            currentNoticeIndex = newIndex;
-            updateNavigation();
-            resetNavigationTimer(); // Show navigation on scroll
-        }
-    }
-}
-
-// Debounce utility function
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
+// Navigation functions removed - using grid layout instead
 
 // Dark mode functions
 function toggleDarkMode() {
@@ -1050,52 +957,10 @@ function loadDarkModePreference() {
     }
 }
 
-// Efficiently update admin buttons without full re-render to prevent mobile freeze
+// Update admin buttons by re-rendering cards
 function updateAdminButtons(show) {
-    // Use requestAnimationFrame for smoother updates on mobile
-    requestAnimationFrame(() => {
-        const noticeCards = document.querySelectorAll('.notice-card');
-    
-    noticeCards.forEach((card, index) => {
-        const notice = notices[index];
-        if (!notice) return;
-        
-        const headerRight = card.querySelector('.notice-header-right-top');
-        if (!headerRight) return;
-        
-        // Remove existing admin buttons
-        const existingEditBtn = headerRight.querySelector('.edit-btn');
-        const existingDeleteBtn = headerRight.querySelector('.delete-btn');
-        
-        if (existingEditBtn) existingEditBtn.remove();
-        if (existingDeleteBtn) existingDeleteBtn.remove();
-        
-        // Add admin buttons if showing
-        if (show) {
-            const editBtn = document.createElement('button');
-            editBtn.className = 'edit-btn';
-            editBtn.title = 'Edit Notice';
-            editBtn.innerHTML = '✏️';
-            editBtn.addEventListener('click', () => editNotice(notice.id));
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-btn';
-            deleteBtn.title = 'Delete Notice';
-            deleteBtn.innerHTML = '🗑️';
-            deleteBtn.addEventListener('click', () => deleteNoticeWithSync(notice.id));
-            
-            // Insert before the priority tag
-            const priorityTag = headerRight.querySelector('.priority-tag');
-            if (priorityTag) {
-                headerRight.insertBefore(editBtn, priorityTag);
-                headerRight.insertBefore(deleteBtn, priorityTag);
-            } else {
-                headerRight.appendChild(editBtn);
-                headerRight.appendChild(deleteBtn);
-            }
-        }
-    });
-    }); // End requestAnimationFrame
+    // Since we now use inline event handlers, we need to re-render the cards
+    renderNotices();
 }
 
 // Add a new link input group to the form
@@ -1179,16 +1044,6 @@ function deleteNotice(noticeId) {
         notices = notices.filter(n => n.id !== noticeId);
         saveLocalNotices();
         renderNotices();
-        if (currentNoticeIndex >= notices.length) {
-            currentNoticeIndex = notices.length - 1;
-            if (currentNoticeIndex >= 0) {
-                const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
-                noticeContainer.scrollTo({
-                    left: currentNoticeIndex * cardWidth,
-                    behavior: 'smooth'
-                });
-            }
-        }
     }
 }
 
@@ -1546,16 +1401,6 @@ async function deleteNoticeWithSync(noticeId) {
         notices = notices.filter(n => n.id !== noticeId);
         saveLocalNotices();
         renderNotices();
-        if (currentNoticeIndex >= notices.length) {
-            currentNoticeIndex = notices.length - 1;
-            if (currentNoticeIndex >= 0) {
-                const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
-                noticeContainer.scrollTo({
-                    left: currentNoticeIndex * cardWidth,
-                    behavior: 'smooth'
-                });
-            }
-        }
         
         // Auto-sync after deleting notices
         if (BUILT_IN_SYNC.enabled && BUILT_IN_SYNC.autoSync && BUILT_IN_SYNC.jsonHostId && BUILT_IN_SYNC.jsonHostToken) {
