@@ -644,11 +644,20 @@ function updateNavDots() {
         numberEl.textContent = `${index + 1}`;
         numberEl.title = `Card ${index + 1}: ${notice.title}`;
         numberEl.addEventListener('click', () => {
-            const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
-            noticeContainer.scrollTo({
-                left: index * cardWidth,
-                behavior: 'smooth'
-            });
+            const card = noticeContainer.querySelector('.notice-card');
+            if (card) {
+                const cardWidth = card.offsetWidth;
+                const containerWidth = noticeContainer.offsetWidth;
+                const isMobile = window.innerWidth <= 768;
+                
+                // On mobile, use full viewport width for scrolling
+                const scrollDistance = isMobile ? containerWidth : cardWidth;
+                
+                noticeContainer.scrollTo({
+                    left: index * scrollDistance,
+                    behavior: 'smooth'
+                });
+            }
         });
         numbersContainer.appendChild(numberEl);
     });
@@ -863,12 +872,17 @@ async function handleNoticeSubmission(e) {
 // Update current notice index based on scroll position
 function updateCurrentNoticeOnScroll() {
     const scrollLeft = noticeContainer.scrollLeft;
-    const cardWidth = noticeContainer.querySelector('.notice-card').offsetWidth;
-    const newIndex = Math.round(scrollLeft / cardWidth);
+    const card = noticeContainer.querySelector('.notice-card');
+    
+    if (card) {
+        const isMobile = window.innerWidth <= 768;
+        const scrollWidth = isMobile ? noticeContainer.offsetWidth : card.offsetWidth;
+        const newIndex = Math.round(scrollLeft / scrollWidth);
 
-    if (newIndex !== currentNoticeIndex) {
-        currentNoticeIndex = newIndex;
-        updateNavigation();
+        if (newIndex !== currentNoticeIndex && newIndex >= 0 && newIndex < notices.length) {
+            currentNoticeIndex = newIndex;
+            updateNavigation();
+        }
     }
 }
 
