@@ -194,6 +194,11 @@ body.dark-mode {
     max-width: 1000px;
     margin: 0 auto;
     min-height: 0;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+
+.notice-container::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome/Safari */
 }
 
 @media (max-width: 768px) {
@@ -1558,12 +1563,16 @@ body.dark-mode {
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: calc(100vw - 16px);
-        max-width: calc(100vw - 16px);
-        margin: 0 8px;
-        max-height: calc(100vh - 100px);
+        min-width: calc(100vw - 32px);
+        max-width: calc(100vw - 32px);
+        margin: 0 16px;
+        max-height: calc(100vh - 120px);
         overflow-y: auto;
         flex-shrink: 0;
+        scroll-snap-align: center;
+        position: relative;
+        left: 0;
+        right: 0;
     }
     
     /* Enhanced scrolling smoothness */
@@ -1577,6 +1586,10 @@ body.dark-mode {
         padding: 4px 0;
         margin: 0;
         max-width: 100vw;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        overflow-x: scroll;
+        overflow-y: hidden;
     }
     
     /* Optimize scrolling messages for mobile */
@@ -1755,23 +1768,24 @@ body.dark-mode {
 /* Mobile navigation visibility fix */
 @media (max-width: 768px) {
     .navigation {
-        background: transparent;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         margin: 0 1rem;
         padding: 0.4rem 0.8rem;
-        box-shadow: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         gap: 0.2rem;
+        backdrop-filter: blur(10px);
     }
     
     .dark-mode .navigation {
-        background: transparent;
-        box-shadow: none;
+        background: rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     
     .nav-total {
         color: #2c3e50;
         font-weight: 700;
-        font-size: 0.7rem;
+        font-size: 0.9rem;
     }
     
     .dark-mode .nav-total {
@@ -1781,11 +1795,35 @@ body.dark-mode {
     .swipe-indicator {
         color: #7f8c8d;
         font-weight: 500;
-        font-size: 0.75rem;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+        display: none;
     }
     
     .dark-mode .swipe-indicator {
         color: #95a5a6;
+    }
+    
+    @media (max-width: 768px) {
+        .swipe-indicator {
+            display: block;
+        }
+    }
+    
+    .nav-number {
+        min-width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .navigation {
+        padding: 8px;
+        bottom: 10px;
+    }
+    
+    .nav-dots {
+        gap: 0.5rem;
+        padding: 6px 12px;
     }
 }
 
@@ -1809,12 +1847,15 @@ body.dark-mode {
     }
     
     .nav-number {
-        min-width: 26px;
-        height: 26px;
-        font-size: 0.75rem;
+        min-width: 36px;
+        height: 36px;
+        font-size: 1rem;
         background: transparent;
-        border: 1.5px solid #667eea;
+        border: 2px solid #667eea;
         box-shadow: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .nav-number.active {
@@ -1823,7 +1864,7 @@ body.dark-mode {
         border-color: #667eea !important;
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.6) !important;
         font-weight: 700 !important;
-        transform: scale(1.05);
+        transform: scale(1.1);
     }
     
     .dark-mode .nav-number.active {
@@ -1833,7 +1874,7 @@ body.dark-mode {
     }
     
     .nav-total {
-        font-size: 0.75rem;
+        font-size: 1rem;
         font-weight: 700;
     }
 }

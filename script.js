@@ -120,6 +120,8 @@ let notices = [
 // Navigation variables
 let navigationHideTimer = null;
 let isNavigationVisible = true;
+let touchStartX = 0;
+let touchEndX = 0;
 
 // DOM elements
 const noticeContainer = document.getElementById('noticeContainer');
@@ -648,23 +650,10 @@ function updateNavDots() {
         numberEl.textContent = `${index + 1}`;
         numberEl.title = `Card ${index + 1}: ${notice.title}`;
         numberEl.addEventListener('click', () => {
-            const card = noticeContainer.querySelector('.notice-card');
-            if (card) {
-                const cardWidth = card.offsetWidth;
-                const containerWidth = noticeContainer.offsetWidth;
-                const isMobile = window.innerWidth <= 768;
-                
-                // On mobile, use full viewport width for scrolling
-                const scrollDistance = isMobile ? containerWidth : cardWidth;
-                
-                noticeContainer.scrollTo({
-                    left: index * scrollDistance,
-                    behavior: 'smooth'
-                });
-                
-                // Reset navigation timer on manual navigation
-                resetNavigationTimer();
-            }
+            currentNoticeIndex = index;
+            scrollToCard(index);
+            updateNavigation();
+            resetNavigationTimer();
         });
         numbersContainer.appendChild(numberEl);
     });
@@ -752,16 +741,48 @@ function setupEventListeners() {
         });
     }
 
-    // Simplified swipe handling - relying on CSS scroll snap
-    noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 150));
+    // Enhanced swipe handling for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isScrolling = false;
 
-    // Add touch listeners for navigation control
-    noticeContainer.addEventListener('touchstart', resetNavigationTimer);
-    noticeContainer.addEventListener('touchmove', resetNavigationTimer);
+    noticeContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        isScrolling = false;
+        resetNavigationTimer();
+    }, { passive: true });
+
+    noticeContainer.addEventListener('touchmove', (e) => {
+        if (window.innerWidth <= 768) {
+            const touchX = e.changedTouches[0].screenX;
+            const diffX = touchStartX - touchX;
+            
+            // Only prevent default if we're actually swiping horizontally
+            if (Math.abs(diffX) > 10 && !isScrolling) {
+                e.preventDefault();
+            }
+        }
+        resetNavigationTimer();
+    }, { passive: false });
+
+    noticeContainer.addEventListener('touchend', (e) => {
+        if (window.innerWidth <= 768) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }
+        resetNavigationTimer();
+    }, { passive: true });
+
+    // Also keep the scroll event for non-touch devices
+    noticeContainer.addEventListener('scroll', debounce(updateCurrentNoticeOnScroll, 150));
     
     // Add keyboard listeners
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        if (e.key === 'ArrowLeft') {
+            goToPreviousCard();
+            resetNavigationTimer();
+        } else if (e.key === 'ArrowRight') {
+            goToNextCard();
             resetNavigationTimer();
         }
     });
@@ -917,6 +938,57 @@ function resetNavigationTimer() {
     showNavigation();
 }
 
+// Handle swipe gestures on mobile
+function handleSwipe() {
+    const swipeThreshold = 50; // Minimum swipe distance
+    const diff = touchStartX - touchEndX;
+
+    if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+            // Swipe left - next card
+            goToNextCard();
+        } else {
+            // Swipe right - previous card
+            goToPreviousCard();
+        }
+    } else {
+        // Not enough swipe distance, snap back to current card
+        snapToCurrentCard();
+    }
+}
+
+// Go to next card
+function goToNextCard() {
+    if (currentNoticeIndex < notices.length - 1) {
+        currentNoticeIndex++;
+        scrollToCard(currentNoticeIndex);
+        updateNavigation();
+    }
+}
+
+// Go to previous card
+function goToPreviousCard() {
+    if (currentNoticeIndex > 0) {
+        currentNoticeIndex--;
+        scrollToCard(currentNoticeIndex);
+        updateNavigation();
+    }
+}
+
+// Snap to current card (used when swipe is not enough to change card)
+function snapToCurrentCard() {
+    scrollToCard(currentNoticeIndex);
+}
+
+// Scroll to a specific card
+function scrollToCard(index) {
+    const cardWidth = noticeContainer.offsetWidth; // Use container width for mobile
+    noticeContainer.scrollTo({
+        left: index * cardWidth,
+        behavior: 'smooth'
+    });
+}
+
 // Update current notice index based on scroll position
 function updateCurrentNoticeOnScroll() {
     const scrollLeft = noticeContainer.scrollLeft;
@@ -925,7 +997,8 @@ function updateCurrentNoticeOnScroll() {
     if (card) {
         const isMobile = window.innerWidth <= 768;
         const scrollWidth = isMobile ? noticeContainer.offsetWidth : card.offsetWidth;
-        const newIndex = Math.round(scrollLeft / scrollWidth);
+        // Use Math.floor for more precise detection on mobile
+        const newIndex = Math.floor((scrollLeft + scrollWidth / 2) / scrollWidth);
 
         if (newIndex !== currentNoticeIndex && newIndex >= 0 && newIndex < notices.length) {
             currentNoticeIndex = newIndex;
