@@ -384,6 +384,11 @@ body.dark-mode {
         min-height: 180px;
         max-height: none;
         padding: 1rem;
+        /* Maintain colored borders on mobile */
+        border-top: 3px solid;
+        border-right: 3px solid;
+        border-bottom: 3px solid;
+        border-left: 4px solid;
     }
     
     .notice-header {
@@ -441,118 +446,117 @@ body.dark-mode {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     /* Add thin colored borders on all sides */
-    border-top: 3px solid transparent;
-    border-right: 3px solid transparent;
-    border-bottom: 3px solid transparent;
-    border-left: 4px solid transparent; /* Keep left border slightly thicker */
-    border: none; /* Remove generic border to allow colored borders to show */
+    border-top: 3px solid;
+    border-right: 3px solid;
+    border-bottom: 3px solid;
+    border-left: 4px solid; /* Keep left border slightly thicker */
 }
 
 /* Different border colors for each card on all sides */
 .notice-card:nth-child(1) {
-    border-left-color: #ff7b7b;
-    border-top-color: #ff7b7b;
-    border-right-color: #ff7b7b;
-    border-bottom-color: #ff7b7b;
+    border-left-color: #ff7b7b !important;
+    border-top-color: #ff7b7b !important;
+    border-right-color: #ff7b7b !important;
+    border-bottom-color: #ff7b7b !important;
 }
 
 .notice-card:nth-child(2) {
-    border-left-color: #5c7cfa;
-    border-top-color: #5c7cfa;
-    border-right-color: #5c7cfa;
-    border-bottom-color: #5c7cfa;
+    border-left-color: #5c7cfa !important;
+    border-top-color: #5c7cfa !important;
+    border-right-color: #5c7cfa !important;
+    border-bottom-color: #5c7cfa !important;
 }
 
 .notice-card:nth-child(3) {
-    border-left-color: #4ecdc4;
-    border-top-color: #4ecdc4;
-    border-right-color: #4ecdc4;
-    border-bottom-color: #4ecdc4;
+    border-left-color: #4ecdc4 !important;
+    border-top-color: #4ecdc4 !important;
+    border-right-color: #4ecdc4 !important;
+    border-bottom-color: #4ecdc4 !important;
 }
 
 .notice-card:nth-child(4) {
-    border-left-color: #ffa726;
-    border-top-color: #ffa726;
-    border-right-color: #ffa726;
-    border-bottom-color: #ffa726;
+    border-left-color: #ffa726 !important;
+    border-top-color: #ffa726 !important;
+    border-right-color: #ffa726 !important;
+    border-bottom-color: #ffa726 !important;
 }
 
 .notice-card:nth-child(5) {
-    border-left-color: #667eea;
-    border-top-color: #667eea;
-    border-right-color: #667eea;
-    border-bottom-color: #667eea;
+    border-left-color: #667eea !important;
+    border-top-color: #667eea !important;
+    border-right-color: #667eea !important;
+    border-bottom-color: #667eea !important;
 }
 
 .notice-card:nth-child(6) {
-    border-left-color: #f093fb;
-    border-top-color: #f093fb;
-    border-right-color: #f093fb;
-    border-bottom-color: #f093fb;
+    border-left-color: #f093fb !important;
+    border-top-color: #f093fb !important;
+    border-right-color: #f093fb !important;
+    border-bottom-color: #f093fb !important;
 }
 
 .notice-card:nth-child(7) {
-    border-left-color: #4facfe;
-    border-top-color: #4facfe;
-    border-right-color: #4facfe;
-    border-bottom-color: #4facfe;
+    border-left-color: #4facfe !important;
+    border-top-color: #4facfe !important;
+    border-right-color: #4facfe !important;
+    border-bottom-color: #4facfe !important;
 }
 
 /* For additional cards, cycle through the colors */
 .notice-card:nth-child(8n+1) {
-    border-left-color: #ff7b7b;
-    border-top-color: #ff7b7b;
-    border-right-color: #ff7b7b;
-    border-bottom-color: #ff7b7b;
+    border-left-color: #ff7b7b !important;
+    border-top-color: #ff7b7b !important;
+    border-right-color: #ff7b7b !important;
+    border-bottom-color: #ff7b7b !important;
 }
 
 .notice-card:nth-child(8n+2) {
-    border-left-color: #5c7cfa;
-    border-top-color: #5c7cfa;
-    border-right-color: #5c7cfa;
-    border-bottom-color: #5c7cfa;
+    border-left-color: #5c7cfa !important;
+    border-top-color: #5c7cfa !important;
+    border-right-color: #5c7cfa !important;
+    border-bottom-color: #5c7cfa !important;
 }
 
 .notice-card:nth-child(8n+3) {
-    border-left-color: #4ecdc4;
-    border-top-color: #4ecdc4;
-    border-right-color: #4ecdc4;
-    border-bottom-color: #4ecdc4;
+    border-left-color: #4ecdc4 !important;
+    border-top-color: #4ecdc4 !important;
+    border-right-color: #4ecdc4 !important;
+    border-bottom-color: #4ecdc4 !important;
 }
 
 .notice-card:nth-child(8n+4) {
-    border-left-color: #ffa726;
-    border-top-color: #ffa726;
-    border-right-color: #ffa726;
-    border-bottom-color: #ffa726;
+    border-left-color: #ffa726 !important;
+    border-top-color: #ffa726 !important;
+    border-right-color: #ffa726 !important;
+    border-bottom-color: #ffa726 !important;
 }
 
 .notice-card:nth-child(8n+5) {
-    border-left-color: #667eea;
-    border-top-color: #667eea;
-    border-right-color: #667eea;
-    border-bottom-color: #667eea;
+    border-left-color: #667eea !important;
+    border-top-color: #667eea !important;
+    border-right-color: #667eea !important;
+    border-bottom-color: #667eea !important;
 }
 
 .notice-card:nth-child(8n+6) {
-    border-left-color: #f093fb;
-    border-top-color: #f093fb;
-    border-right-color: #f093fb;
-    border-bottom-color: #f093fb;
+    border-left-color: #f093fb !important;
+    border-top-color: #f093fb !important;
+    border-right-color: #f093fb !important;
+    border-bottom-color: #f093fb !important;
 }
 
 .notice-card:nth-child(8n+7) {
-    border-left-color: #4facfe;
-    border-top-color: #4facfe;
-    border-right-color: #4facfe;
-    border-bottom-color: #4facfe;
+    border-left-color: #4facfe !important;
+    border-top-color: #4facfe !important;
+    border-right-color: #4facfe !important;
+    border-bottom-color: #4facfe !important;
 }
 
 .notice-card:nth-child(8n+0) {
-    border-left-color: #ff7b7b;
-    border-top-color: #ff7b7b;
-    border-right-color: #ff7b7b;
-    border-bottom-color: #ff7b7b;
+    border-left-color: #ff7b7b !important;
+    border-top-color: #ff7b7b !important;
+    border-right-color: #ff7b7b !important;
+    border-bottom-color: #ff7b7b !important;
 }
 
 .notice-card:hover {
@@ -579,25 +583,21 @@ body.dark-mode {
 .light-mode .notice-card {
     background: var(--card-gradient-light);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    outline: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .light-mode .notice-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    outline: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .dark-mode .notice-card {
     background: var(--card-gradient-dark);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    outline: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .dark-mode .notice-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    outline: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 @media (max-width: 480px) {
