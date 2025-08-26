@@ -1015,16 +1015,18 @@ function loadDarkModePreference() {
     const iconSpan = darkModeToggle.querySelector('.btn-icon');
     const textSpan = darkModeToggle.querySelector('.btn-text');
     
-    if (themePreference === 'light') {
-        document.body.classList.add('light-mode');
-        updateCSSVariablesForLightMode();
-        if (iconSpan) iconSpan.textContent = '🌙';
-        if (textSpan) textSpan.textContent = 'Dark';
-    } else {
+    // Set light mode as default if no preference is saved
+    if (themePreference === 'dark') {
         document.body.classList.add('dark-mode');
         updateCSSVariablesForDarkMode();
         if (iconSpan) iconSpan.textContent = '☀️';
         if (textSpan) textSpan.textContent = 'Light';
+    } else {
+        // Default to light mode
+        document.body.classList.add('light-mode');
+        updateCSSVariablesForLightMode();
+        if (iconSpan) iconSpan.textContent = '🌙';
+        if (textSpan) textSpan.textContent = 'Dark';
     }
 }
 
