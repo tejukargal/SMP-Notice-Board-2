@@ -1023,6 +1023,7 @@ function loadDarkModePreference() {
         if (textSpan) textSpan.textContent = 'Light';
     } else {
         // Default to light mode
+        document.body.classList.remove('dark-mode');
         document.body.classList.add('light-mode');
         updateCSSVariablesForLightMode();
         if (iconSpan) iconSpan.textContent = '🌙';

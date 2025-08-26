@@ -333,12 +333,16 @@ body.dark-mode {
     max-height: 180px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    /* Add a subtle outer border for enhanced modern look */
+    outline: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .notice-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     z-index: 1;
+    /* Enhance the border on hover */
+    outline: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .notice-card:before {
@@ -356,22 +360,26 @@ body.dark-mode {
     background: var(--card-gradient-light);
     border: 1px solid var(--border-light);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    outline: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .light-mode .notice-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    outline: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .dark-mode .notice-card {
     background: var(--card-gradient-dark);
     border: 1px solid var(--border-dark);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    outline: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .dark-mode .notice-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    outline: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 @media (max-width: 480px) {
