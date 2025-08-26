@@ -2458,7 +2458,7 @@ body.dark-mode {
     .notice-body {
         padding: 12px 16px;
         flex: 1;
-        overflow-y: auto;
+        overflow: hidden;
     }
     
     .notice-header-left {
