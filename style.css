@@ -249,8 +249,9 @@ body.dark-mode {
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-height: 120px;
-    max-height: 140px;
+    height: 160px;
+    min-height: 160px;
+    max-height: 160px;
 }
 
 .notice-card:hover {
@@ -384,9 +385,9 @@ body.dark-mode .notice-card:hover {
 }
 
 .notice-date {
-    color: var(--text-muted);
-    font-size: 0.7rem;
-    font-weight: 500;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
 .notice-tags {
@@ -397,10 +398,10 @@ body.dark-mode .notice-card:hover {
 }
 
 .priority-tag {
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.02em;
 }
@@ -423,26 +424,26 @@ body.dark-mode .notice-card:hover {
 .course-tag {
     background: var(--input-bg);
     color: var(--text);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
     border: 1px solid var(--input-border);
 }
 
 .category-tag {
     background: var(--input-bg);
     color: var(--text);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
     border: 1px solid var(--input-border);
 }
 
 .notice-title {
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 700;
     color: var(--text);
     line-height: 1.3;
     flex: 1;
@@ -464,13 +465,15 @@ body.dark-mode .notice-card:hover {
 
 .notice-content {
     color: var(--text-muted);
-    line-height: 1.4;
-    font-size: 0.8rem;
+    line-height: 1.3;
+    font-size: 0.85rem;
     flex: 1;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    max-height: 2.6em;
+    text-overflow: ellipsis;
 }
 
 .dark-mode .notice-content {
@@ -509,10 +512,13 @@ body.dark-mode .notice-popup {
     border-radius: 16px;
     width: 90%;
     max-width: 700px;
-    max-height: 90vh;
+    height: 85vh;
+    max-height: 85vh;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     animation: popupSlideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
 }
 
 @keyframes popupSlideIn {
@@ -534,6 +540,7 @@ body.dark-mode .notice-popup {
     gap: 1rem;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(135deg, rgba(92, 124, 250, 0.1), rgba(70, 214, 255, 0.1));
+    flex-shrink: 0;
 }
 
 .notice-popup-header h2 {
@@ -571,7 +578,8 @@ body.dark-mode .notice-popup {
 .notice-popup-body {
     padding: 1.5rem;
     overflow-y: auto;
-    max-height: calc(90vh - 120px);
+    flex: 1;
+    min-height: 0;
 }
 
 .notice-popup-info {
@@ -627,8 +635,10 @@ body.dark-mode .notice-popup {
 .popup-admin-controls {
     display: flex;
     gap: 1rem;
-    padding-top: 1rem;
+    padding: 1rem 1.5rem;
     border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--card);
 }
 
 .popup-edit-btn {
@@ -668,7 +678,8 @@ body.dark-mode .notice-popup {
 @media (max-width: 768px) {
     .notice-popup-content {
         width: 95%;
-        max-height: 95vh;
+        height: 90vh;
+        max-height: 90vh;
     }
     
     .notice-popup-header {
@@ -677,7 +688,6 @@ body.dark-mode .notice-popup {
     
     .notice-popup-body {
         padding: 1rem;
-        max-height: calc(95vh - 100px);
     }
     
     .popup-tags {
@@ -687,6 +697,7 @@ body.dark-mode .notice-popup {
     .popup-admin-controls {
         flex-direction: column;
         gap: 0.75rem;
+        padding: 1rem;
     }
 }
 
