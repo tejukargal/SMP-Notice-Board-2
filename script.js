@@ -722,6 +722,9 @@ function openNoticePopup(notice) {
     // Show popup
     popup.style.display = 'flex';
     
+    // Push state to history so back button closes popup
+    history.pushState({popupOpen: true}, null, window.location.href);
+    
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
     
@@ -735,6 +738,12 @@ function closeNoticePopup() {
     
     // Restore body scroll
     document.body.style.overflow = '';
+    
+    // Check if we need to handle history state
+    if (history.state && history.state.popupOpen) {
+        // Replace the current state to avoid multiple popup states in history
+        history.replaceState(null, null, window.location.href);
+    }
     
     console.log('📋 Closed notice popup');
 }
@@ -794,6 +803,18 @@ function setupEventListeners() {
             const popup = document.getElementById('noticePopup');
             if (popup.style.display === 'flex') {
                 closeNoticePopup();
+            }
+        }
+    });
+
+    // Close popup when browser back button is pressed
+    window.addEventListener('popstate', (e) => {
+        const popup = document.getElementById('noticePopup');
+        if (popup.style.display === 'flex') {
+            closeNoticePopup();
+            // Prevent the default back behavior if we're just closing the popup
+            if (e.state && e.state.popupClosed) {
+                history.pushState(null, null, window.location.href);
             }
         }
     });
