@@ -47,16 +47,8 @@ This is an SMP Notice Board application - a web-based notice management system f
 CSV files should follow this format for scrolling messages:
 ```
 Student Name,Father Name,Year,Course,Total Paid
-SHRUSTI,ABC,1st Yr,CS,11988
-SYED SUHAN,ABC,1st Yr,CS,11988
+STUDENT_NAME,FATHER_NAME,1st Yr,CS,11988
 ```
-
-**Expected CSV Columns:**
-- Column 0: Student Name (string)
-- Column 1: Father Name (string) 
-- Column 2: Year (string, e.g., "1st Yr", "2nd Yr")
-- Column 3: Course (string, e.g., "CS", "CE", "ME", "EC", "EE")
-- Column 4: Total Paid (number/string, fees amount)
 
 ## Development Commands
 
@@ -105,12 +97,11 @@ const BUILT_IN_SYNC = {
 ```
 
 ### UI/UX Features
-- **Mobile-First Design**: Optimized for touch devices with grid layout on mobile
-- **Card-Based Interface**: Grid layout for notices (responsive columns)
+- **Mobile-First Design**: Optimized for touch devices with swipe navigation
+- **Card-Based Interface**: Horizontal scrolling notice cards
 - **Dark/Light Themes**: Toggle between themes with preference storage
-- **Responsive Layout**: Grid auto-fits to screen size (300px+ columns)
+- **Responsive Navigation**: Auto-hide floating navigation with card numbers
 - **Rich Animations**: Smooth transitions and hover effects
-- **Popup Modals**: Click-to-expand detailed notice view with scrolling content
 
 ## Admin Access
 
@@ -131,8 +122,6 @@ const BUILT_IN_SYNC = {
 - **Auto-sorting**: `sortAndReorderNotices()` function prioritizes by importance then date
 - **Serial Numbers**: IDs are reassigned after sorting to maintain sequence
 - **Color Coding**: Each card gets unique gradient colors via CSS nth-child selectors
-- **Grid Layout**: Uses CSS Grid with `repeat(auto-fit, minmax(300px, 1fr))` for responsive columns
-- **Popup System**: Cards are compact; full content shown in modal on click
 
 ### CSV Processing
 - **File Loading**: `loadAllCSVFiles()` preloads common CSV files at startup
@@ -170,17 +159,3 @@ const BUILT_IN_SYNC = {
 - CSS custom properties in `:root` define color scheme
 - Dark mode variants in `.dark-mode` selectors
 - Responsive breakpoints at 768px and 480px
-
-## Development Tips
-
-### Common Tasks
-- **Testing CSV**: Use browser dev tools to check `csvData` object for loaded files
-- **Debugging Sync**: Check console for sync status messages and connection errors
-- **Layout Issues**: Grid layout adapts automatically; check CSS Grid DevTools
-- **Performance**: Scrolling messages use hardware acceleration and batched processing
-
-### File Structure Navigation
-- All core logic in `script.js` (no build system required)
-- CSS custom properties for easy theming in `style.css`
-- Sample data structure in `smp-notices-sample.json`
-- Student data in `1.csv` (extensible to 2.csv, 3.csv, etc.)

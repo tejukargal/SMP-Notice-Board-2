@@ -25,16 +25,7 @@
       "Bash(curl:*)",
       "Bash(git rm:*)",
       "Bash(git stash:*)",
-      "Read(/D:\\Apps\\HTML Apps/**)",
-      "Read(/c:\\Users\\Lekhana\\Downloads/**)",
-      "Read(/c:\\Users\\Lekhana\\Downloads/**)",
-      "Read(/c:\\Users\\Lekhana\\Downloads/**)",
-      "Bash(ping:*)",
-      "Bash(nslookup:*)",
-      "Read(/c:\\Users\\Lekhana\\Downloads/**)",
-      "Read(/C:\\Users\\Lekhana\\Downloads/**)",
-      "Read(/C:\\Users\\Lekhana\\Downloads/**)",
-      "Read(/c:\\Users\\Lekhana\\Downloads/**)"
+      "Read(/D:\\Apps\\HTML Apps/**)"
     ],
     "deny": [],
     "ask": []
