@@ -634,6 +634,9 @@ function openNoticePopup(notice) {
     const popupLinks = document.getElementById('popupNoticeLinks');
     const popupAdminControls = document.getElementById('popupAdminControls');
     
+    // Add history state for back button support
+    history.pushState({ popupOpen: true, noticeId: notice.id }, '', `#notice-${notice.id}`);
+    
     // Fill popup with notice data
     popupTitle.textContent = notice.title;
     popupContent.innerHTML = notice.content;
@@ -709,6 +712,11 @@ function closeNoticePopup() {
     // Restore body scroll
     document.body.style.overflow = '';
     
+    // Clean up URL hash
+    if (window.location.hash.startsWith('#notice-')) {
+        history.replaceState(null, '', window.location.pathname);
+    }
+    
     console.log('📋 Closed notice popup');
 }
 
@@ -768,6 +776,14 @@ function setupEventListeners() {
             if (popup.style.display === 'flex') {
                 closeNoticePopup();
             }
+        }
+    });
+
+    // Handle browser back button for popup
+    window.addEventListener('popstate', (e) => {
+        const popup = document.getElementById('noticePopup');
+        if (popup.style.display === 'flex') {
+            closeNoticePopup();
         }
     });
 
@@ -1069,7 +1085,7 @@ function resetNoticeForm() {
 
 // Setup rich text editor
 function setupRichTextEditor() {
-    const editorButtons = document.querySelectorAll('.editor-btn');
+    const editorButtons = document.querySelectorAll('.editor-btn-icon');
     
     editorButtons.forEach(button => {
         button.addEventListener('click', (e) => {
@@ -1094,7 +1110,7 @@ function setupRichTextEditor() {
 
 // Update editor button states based on current selection
 function updateEditorButtonStates() {
-    const editorButtons = document.querySelectorAll('.editor-btn');
+    const editorButtons = document.querySelectorAll('.editor-btn-icon');
     
     editorButtons.forEach(button => {
         const command = button.getAttribute('data-command');
