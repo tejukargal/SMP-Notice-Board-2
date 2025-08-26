@@ -576,9 +576,31 @@ function createNoticeCard(notice, index) {
     const textContent = notice.content.replace(/<[^>]*>/g, ''); // Strip HTML tags
     const truncatedContent = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
     
-    // Extract first few words for a message preview
-    const words = textContent.split(' ');
-    const messagePreview = words.length > 10 ? words.slice(0, 10).join(' ') + '...' : textContent;
+    // Extract a better message preview
+    let messagePreview = "";
+    if (textContent.length > 50) {
+        // Try to find a natural break point
+        const breakPoint = Math.min(50, textContent.length);
+        let endIndex = breakPoint;
+        
+        // Look for a space or punctuation near the break point
+        for (let i = breakPoint; i < Math.min(breakPoint + 10, textContent.length); i++) {
+            if (/[.!?]/.test(textContent[i])) {
+                endIndex = i + 1;
+                break;
+            }
+            if (/\s/.test(textContent[i])) {
+                endIndex = i;
+            }
+        }
+        
+        messagePreview = textContent.substring(0, endIndex).trim();
+        if (endIndex < textContent.length) {
+            messagePreview += '...';
+        }
+    } else {
+        messagePreview = textContent;
+    }
     
     card.innerHTML = `
         <div class="notice-header">
