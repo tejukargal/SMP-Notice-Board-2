@@ -1609,7 +1609,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Initialize app
     await init();
+    
+    // Show welcome message to inform users about features
+    showWelcomeMessage();
 });
+
+// Show welcome message to inform users about features
+function showWelcomeMessage() {
+    // Only show the message once per session
+    if (!sessionStorage.getItem('welcomeMessageShown')) {
+        setTimeout(() => {
+            console.log('Welcome to SMP Notice Board! Remember to visit daily for new updates and click on cards to see full content.');
+        }, 2000);
+        
+        // Mark that we've shown the message
+        sessionStorage.setItem('welcomeMessageShown', 'true');
+    }
+}
 
 // CSV Parsing and Scrolling Messages Functions
 async function parseCSVFile(fileName) {

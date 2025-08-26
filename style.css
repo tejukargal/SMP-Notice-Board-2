@@ -107,6 +107,57 @@ body.dark-mode {
     flex-shrink: 0;
 }
 
+/* Scrolling Banner Styles */
+.scrolling-banner {
+    background: linear-gradient(90deg, #5c7cfa, #46d6ff);
+    color: #0b1020;
+    padding: 8px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.scrolling-text {
+    display: inline-block;
+    animation: scroll-left 70s linear infinite; /* Slower speed for better readability */
+    padding-left: 100%;
+}
+
+.scrolling-item {
+    display: inline-block;
+    padding: 0 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.scrolling-item:before {
+    content: "•";
+    padding-right: 10px;
+}
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.light-mode .scrolling-banner {
+    background: linear-gradient(90deg, #5c7cfa, #46d6ff);
+    color: #0b1020;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .scrolling-banner {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: #eef1ff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 @media (max-width: 768px) {
     .header-content {
         padding: 0 2.5vw;
@@ -238,6 +289,16 @@ body.dark-mode {
     .message-preview {
         font-size: 0.8rem;
     }
+    
+    /* Adjust scrolling banner for mobile */
+    .scrolling-banner {
+        padding: 6px 0;
+    }
+    
+    .scrolling-item {
+        font-size: 0.8rem;
+        padding: 0 15px;
+    }
 }
 
 .notice-container {
@@ -251,6 +312,7 @@ body.dark-mode {
     margin: 0 auto;
     min-height: 0;
     scrollbar-width: none; /* Hide scrollbar for Firefox */
+    margin-top: 0.5rem; /* Add space for the scrolling banner */
 }
 
 .notice-container::-webkit-scrollbar {
@@ -335,6 +397,70 @@ body.dark-mode {
     -webkit-backdrop-filter: blur(10px);
     /* Add a subtle outer border for enhanced modern look */
     outline: 1px solid rgba(255, 255, 255, 0.1);
+    /* Add thin colored border on left side */
+    border-left: 4px solid transparent;
+}
+
+/* Different border colors for each card */
+.notice-card:nth-child(1) {
+    border-left-color: #ff7b7b;
+}
+
+.notice-card:nth-child(2) {
+    border-left-color: #5c7cfa;
+}
+
+.notice-card:nth-child(3) {
+    border-left-color: #4ecdc4;
+}
+
+.notice-card:nth-child(4) {
+    border-left-color: #ffa726;
+}
+
+.notice-card:nth-child(5) {
+    border-left-color: #667eea;
+}
+
+.notice-card:nth-child(6) {
+    border-left-color: #f093fb;
+}
+
+.notice-card:nth-child(7) {
+    border-left-color: #4facfe;
+}
+
+/* For additional cards, cycle through the colors */
+.notice-card:nth-child(8n+1) {
+    border-left-color: #ff7b7b;
+}
+
+.notice-card:nth-child(8n+2) {
+    border-left-color: #5c7cfa;
+}
+
+.notice-card:nth-child(8n+3) {
+    border-left-color: #4ecdc4;
+}
+
+.notice-card:nth-child(8n+4) {
+    border-left-color: #ffa726;
+}
+
+.notice-card:nth-child(8n+5) {
+    border-left-color: #667eea;
+}
+
+.notice-card:nth-child(8n+6) {
+    border-left-color: #f093fb;
+}
+
+.notice-card:nth-child(8n+7) {
+    border-left-color: #4facfe;
+}
+
+.notice-card:nth-child(8n+0) {
+    border-left-color: #ff7b7b;
 }
 
 .notice-card:hover {
@@ -343,6 +469,38 @@ body.dark-mode {
     z-index: 1;
     /* Enhance the border on hover */
     outline: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Add a subtle click indicator */
+.notice-card:after {
+    content: "Click to view full content";
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.notice-card:hover:after {
+    opacity: 1;
+}
+
+.light-mode .notice-card:after {
+    color: var(--text-muted-light);
+}
+
+.dark-mode .notice-card:after {
+    color: var(--text-muted-dark);
+}
+
+@media (max-width: 480px) {
+    .notice-card:after {
+        font-size: 0.6rem;
+        bottom: 3px;
+        right: 8px;
+    }
 }
 
 .notice-card:before {
