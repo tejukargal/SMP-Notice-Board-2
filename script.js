@@ -574,7 +574,11 @@ function createNoticeCard(notice, index) {
     
     // Create truncated content for preview
     const textContent = notice.content.replace(/<[^>]*>/g, ''); // Strip HTML tags
-    const truncatedContent = textContent.length > 80 ? textContent.substring(0, 80) + '...' : textContent;
+    const truncatedContent = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+    
+    // Extract first few words for a message preview
+    const words = textContent.split(' ');
+    const messagePreview = words.length > 10 ? words.slice(0, 10).join(' ') + '...' : textContent;
     
     card.innerHTML = `
         <div class="notice-header">
@@ -584,11 +588,11 @@ function createNoticeCard(notice, index) {
             </div>
             <div class="notice-header-right">
                 <div class="notice-header-right-top">
+                    <span class="priority-tag priority-${notice.priority.toLowerCase()}">${notice.priority}</span>
                     ${isAdminLoggedIn ? `
                         <button class="edit-btn" title="Edit Notice" onclick="event.stopPropagation(); editNotice(${notice.id})">✏️</button>
                         <button class="delete-btn" title="Delete Notice" onclick="event.stopPropagation(); deleteNoticeWithSync(${notice.id})">🗑️</button>
                     ` : ''}
-                    <span class="priority-tag priority-${notice.priority.toLowerCase()}">${notice.priority}</span>
                 </div>
                 <div class="notice-header-right-bottom">
                     <div class="notice-date">${formatDate(notice.date)}</div>
@@ -601,6 +605,7 @@ function createNoticeCard(notice, index) {
                 <span class="category-tag">${notice.category}</span>
             </div>
             <div class="notice-content">${truncatedContent}</div>
+            <div class="message-preview">${messagePreview}</div>
         </div>
     `;
     
@@ -633,9 +638,6 @@ function openNoticePopup(notice) {
     const popupScrollingContent = document.getElementById('popupScrollingContent');
     const popupLinks = document.getElementById('popupNoticeLinks');
     const popupAdminControls = document.getElementById('popupAdminControls');
-    
-    // Add history state for back button support
-    history.pushState({ popupOpen: true, noticeId: notice.id }, '', `#notice-${notice.id}`);
     
     // Fill popup with notice data
     popupTitle.textContent = notice.title;
@@ -712,11 +714,6 @@ function closeNoticePopup() {
     // Restore body scroll
     document.body.style.overflow = '';
     
-    // Clean up URL hash
-    if (window.location.hash.startsWith('#notice-')) {
-        history.replaceState(null, '', window.location.pathname);
-    }
-    
     console.log('📋 Closed notice popup');
 }
 
@@ -776,14 +773,6 @@ function setupEventListeners() {
             if (popup.style.display === 'flex') {
                 closeNoticePopup();
             }
-        }
-    });
-
-    // Handle browser back button for popup
-    window.addEventListener('popstate', (e) => {
-        const popup = document.getElementById('noticePopup');
-        if (popup.style.display === 'flex') {
-            closeNoticePopup();
         }
     });
 
@@ -946,7 +935,23 @@ async function handleNoticeSubmission(e) {
 
 // Dark mode functions
 function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
+    const isCurrentlyDark = document.body.classList.contains('dark-mode');
+    
+    if (isCurrentlyDark) {
+        // Switch to light mode
+        document.body.classList.remove('dark-mode');
+        document.body.classList.add('light-mode');
+        updateCSSVariablesForLightMode();
+    } else {
+        // Switch to dark mode
+        const isCurrentlyLight = document.body.classList.contains('light-mode');
+        if (isCurrentlyLight) {
+            document.body.classList.remove('light-mode');
+        }
+        document.body.classList.add('dark-mode');
+        updateCSSVariablesForDarkMode();
+    }
+    
     const isDarkMode = document.body.classList.contains('dark-mode');
     const iconSpan = darkModeToggle.querySelector('.btn-icon');
     const textSpan = darkModeToggle.querySelector('.btn-text');
@@ -954,20 +959,48 @@ function toggleDarkMode() {
     if (iconSpan) iconSpan.textContent = isDarkMode ? '☀️' : '🌙';
     if (textSpan) textSpan.textContent = isDarkMode ? 'Light' : 'Dark';
     
-    localStorage.setItem('darkMode', isDarkMode);
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+}
+
+function updateCSSVariablesForLightMode() {
+    document.documentElement.style.setProperty('--bg', 'var(--bg-light)');
+    document.documentElement.style.setProperty('--card', 'var(--card-light)');
+    document.documentElement.style.setProperty('--card-gradient', 'var(--card-gradient-light)');
+    document.documentElement.style.setProperty('--muted', 'var(--muted-light)');
+    document.documentElement.style.setProperty('--accent', 'var(--accent-light)');
+    document.documentElement.style.setProperty('--text', 'var(--text-light)');
+    document.documentElement.style.setProperty('--text-muted', 'var(--text-muted-light)');
+    document.documentElement.style.setProperty('--border', 'var(--border-light)');
+    document.documentElement.style.setProperty('--input-bg', 'var(--input-bg-light)');
+    document.documentElement.style.setProperty('--input-border', 'var(--input-border-light)');
+}
+
+function updateCSSVariablesForDarkMode() {
+    document.documentElement.style.setProperty('--bg', 'var(--bg-dark)');
+    document.documentElement.style.setProperty('--card', 'var(--card-dark)');
+    document.documentElement.style.setProperty('--card-gradient', 'var(--card-gradient-dark)');
+    document.documentElement.style.setProperty('--muted', 'var(--muted-dark)');
+    document.documentElement.style.setProperty('--accent', 'var(--accent-dark)');
+    document.documentElement.style.setProperty('--text', 'var(--text-dark)');
+    document.documentElement.style.setProperty('--text-muted', 'var(--text-muted-dark)');
+    document.documentElement.style.setProperty('--border', 'var(--border-dark)');
+    document.documentElement.style.setProperty('--input-bg', 'var(--input-bg-dark)');
+    document.documentElement.style.setProperty('--input-border', 'var(--input-border-dark)');
 }
 
 function loadDarkModePreference() {
-    const darkModePreference = localStorage.getItem('darkMode');
+    const themePreference = localStorage.getItem('theme');
     const iconSpan = darkModeToggle.querySelector('.btn-icon');
     const textSpan = darkModeToggle.querySelector('.btn-text');
     
-    if (darkModePreference === 'false') {
-        document.body.classList.remove('dark-mode');
+    if (themePreference === 'light') {
+        document.body.classList.add('light-mode');
+        updateCSSVariablesForLightMode();
         if (iconSpan) iconSpan.textContent = '🌙';
         if (textSpan) textSpan.textContent = 'Dark';
     } else {
         document.body.classList.add('dark-mode');
+        updateCSSVariablesForDarkMode();
         if (iconSpan) iconSpan.textContent = '☀️';
         if (textSpan) textSpan.textContent = 'Light';
     }
@@ -1085,7 +1118,7 @@ function resetNoticeForm() {
 
 // Setup rich text editor
 function setupRichTextEditor() {
-    const editorButtons = document.querySelectorAll('.editor-btn-icon');
+    const editorButtons = document.querySelectorAll('.editor-btn');
     
     editorButtons.forEach(button => {
         button.addEventListener('click', (e) => {
@@ -1110,7 +1143,7 @@ function setupRichTextEditor() {
 
 // Update editor button states based on current selection
 function updateEditorButtonStates() {
-    const editorButtons = document.querySelectorAll('.editor-btn-icon');
+    const editorButtons = document.querySelectorAll('.editor-btn');
     
     editorButtons.forEach(button => {
         const command = button.getAttribute('data-command');
