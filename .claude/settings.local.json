@@ -28,6 +28,9 @@
       "Read(/D:\\Apps\\HTML Apps/**)",
       "Read(/c:\\Users\\Lekhana\\Downloads/**)",
       "Read(/c:\\Users\\Lekhana\\Downloads/**)",
+      "Read(/c:\\Users\\Lekhana\\Downloads/**)",
+      "Bash(ping:*)",
+      "Bash(nslookup:*)",
       "Read(/c:\\Users\\Lekhana\\Downloads/**)"
     ],
     "deny": [],
