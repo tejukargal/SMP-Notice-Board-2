@@ -28,6 +28,9 @@
       "Read(/D:\\Apps\\HTML Apps/**)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "D:\\d D:\\Apps"
+    ]
   }
 }

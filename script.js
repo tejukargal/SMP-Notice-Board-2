@@ -909,8 +909,10 @@ async function handleNoticeSubmission(e) {
             const linkInputGroups = linksContainer.querySelectorAll('.link-input-group');
             linkInputGroups.forEach(group => {
                 const title = group.querySelector('.link-title-input').value;
-                const url = group.querySelector('.link-url-input').value;
+                let url = group.querySelector('.link-url-input').value;
                 if (title && url) {
+                    // Format URL if needed
+                    url = formatUrl(url);
                     links.push({ title, url });
                 }
             });
@@ -936,8 +938,10 @@ async function handleNoticeSubmission(e) {
         const linkInputGroups = linksContainer.querySelectorAll('.link-input-group');
         linkInputGroups.forEach(group => {
             const title = group.querySelector('.link-title-input').value;
-            const url = group.querySelector('.link-url-input').value;
+            let url = group.querySelector('.link-url-input').value;
             if (title && url) {
+                // Format URL if needed
+                url = formatUrl(url);
                 links.push({ title, url });
             }
         });
@@ -1060,6 +1064,11 @@ function updateAdminButtons(show) {
 
 // Add a new link input group to the form
 function addLinkInput() {
+    if (!linksContainer) {
+        console.error('linksContainer not found!');
+        return;
+    }
+    
     const linkInputGroup = document.createElement('div');
     linkInputGroup.className = 'link-input-group';
 
@@ -1069,14 +1078,17 @@ function addLinkInput() {
     titleInput.className = 'link-title-input';
 
     const urlInput = document.createElement('input');
-    urlInput.type = 'url';
+    urlInput.type = 'text';
     urlInput.placeholder = 'Link URL';
     urlInput.className = 'link-url-input';
+    urlInput.inputMode = 'url';
+    urlInput.enterKeyHint = 'next';
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'remove-link-btn';
-    removeBtn.textContent = '-';
+    removeBtn.textContent = '×'; // Using × instead of - for better visibility
+    removeBtn.title = 'Remove link';
     removeBtn.addEventListener('click', () => {
         linkInputGroup.remove();
     });
@@ -1086,6 +1098,9 @@ function addLinkInput() {
     linkInputGroup.appendChild(removeBtn);
 
     linksContainer.appendChild(linkInputGroup);
+    
+    // Focus on the title input for better UX
+    titleInput.focus();
 }
 
 // Admin logout function
@@ -1888,6 +1903,15 @@ async function updateNoticeScrollingMessages(noticeId) {
     console.log(`📋 Settings: enabled=${notice.scrollingEnabled}, label=${notice.scrollingLabel}, speed=${notice.scrollingSpeed}`);
     
     saveLocalNotices();
+}
+
+// Helper function to format URLs properly
+function formatUrl(url) {
+    // If URL doesn't start with http:// or https://, add https://
+    if (url && !url.match(/^https?:\/\//)) {
+        return 'https://' + url;
+    }
+    return url;
 }
 
 function loadNoticeScrollingSettings(notice) {
