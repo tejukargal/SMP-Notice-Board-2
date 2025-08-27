@@ -572,24 +572,22 @@ function createNoticeCard(notice, index) {
     card.className = 'notice-card';
     card.dataset.noticeId = notice.id;
     
-    // Create truncated content for preview
+    // Create optimized message preview for cards
     const textContent = notice.content.replace(/<[^>]*>/g, ''); // Strip HTML tags
-    const truncatedContent = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
-    
-    // Extract a better message preview
     let messagePreview = "";
-    if (textContent.length > 50) {
-        // Try to find a natural break point
-        const breakPoint = Math.min(50, textContent.length);
+    
+    if (textContent.length > 120) {
+        // Try to find a natural break point for better readability
+        const breakPoint = Math.min(120, textContent.length);
         let endIndex = breakPoint;
         
         // Look for a space or punctuation near the break point
-        for (let i = breakPoint; i < Math.min(breakPoint + 10, textContent.length); i++) {
+        for (let i = breakPoint; i >= Math.max(100, breakPoint - 20); i--) {
             if (/[.!?]/.test(textContent[i])) {
                 endIndex = i + 1;
                 break;
             }
-            if (/\s/.test(textContent[i])) {
+            if (/\s/.test(textContent[i]) && i > 100) {
                 endIndex = i;
             }
         }
@@ -622,12 +620,13 @@ function createNoticeCard(notice, index) {
             </div>
         </div>
         <div class="notice-body">
-            <div class="notice-tags">
-                <span class="course-tag">${notice.course}</span>
-                <span class="category-tag">${notice.category}</span>
+            <div class="notice-tags-content">
+                <div class="notice-tags">
+                    <span class="course-tag">${notice.course}</span>
+                    <span class="category-tag">${notice.category}</span>
+                </div>
+                <div class="message-preview">${messagePreview}</div>
             </div>
-            <div class="notice-content">${truncatedContent}</div>
-            <div class="message-preview">${messagePreview}</div>
         </div>
     `;
     

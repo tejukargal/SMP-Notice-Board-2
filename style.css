@@ -298,7 +298,11 @@ body.dark-mode {
     }
     
     .message-preview {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        -webkit-line-clamp: 3;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        line-height: 1.4;
     }
     
     /* Adjust scrolling banner for mobile */
@@ -371,6 +375,33 @@ body.dark-mode {
         padding: 0.75rem;
         gap: 1rem;
     }
+    
+    .notice-tags-content {
+        flex-direction: row;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .notice-tags {
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 100px;
+    }
+    
+    .message-preview {
+        flex: 1;
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+        font-size: 0.85rem;
+        -webkit-line-clamp: 3;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        color: var(--text-muted);
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
 }
 
 @media (max-width: 480px) {
@@ -394,6 +425,9 @@ body.dark-mode {
     .notice-header {
         flex-direction: column;
         gap: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1rem;
     }
     
     .notice-header-left {
@@ -602,14 +636,15 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .notice-card {
-        min-height: 220px;
+        min-height: 280px;
         max-height: none;
         padding: 1rem;
+        overflow: visible;
     }
 }
 
 .notice-header {
-    padding: 0;
+    padding: 0 0 0.75rem 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -617,6 +652,15 @@ body.dark-mode {
     position: relative;
     background: none;
     margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.light-mode .notice-header {
+    border-bottom-color: var(--border-light);
+}
+
+.dark-mode .notice-header {
+    border-bottom-color: var(--border-dark);
 }
 
 /* Different accent colors for each card */
@@ -954,6 +998,12 @@ body.dark-mode {
     flex: 1;
 }
 
+.notice-tags-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
 .notice-content {
     color: var(--text-muted);
     line-height: 1.5;
@@ -996,17 +1046,18 @@ body.dark-mode {
 
 .message-preview {
     color: var(--text-muted);
-    line-height: 1.4;
-    font-size: 0.85rem;
-    font-style: italic;
+    line-height: 1.5;
+    font-size: 0.9rem;
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px dashed var(--border);
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     position: relative;
+    text-align: justify;
+    word-wrap: break-word;
 }
 
 .message-preview:before {
@@ -1047,8 +1098,11 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .message-preview {
-        font-size: 0.85rem;
-        -webkit-line-clamp: 3;
+        font-size: 0.88rem;
+        -webkit-line-clamp: 4;
+        line-height: 1.4;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
     }
 }
 
@@ -2368,7 +2422,7 @@ body.dark-mode {
         min-width: calc(100vw - 32px);
         max-width: calc(100vw - 32px);
         margin: 0 16px;
-        min-height: 220px;
+        min-height: 280px;
         max-height: none;
         overflow-y: visible;
         flex-shrink: 0;
@@ -2458,13 +2512,51 @@ body.dark-mode {
         flex-direction: column;
         gap: 1rem;
         align-items: stretch;
-        padding: 12px 16px;
+        padding: 12px 16px 12px 16px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1rem;
     }
     
     .notice-body {
         padding: 12px 16px;
         flex: 1;
-        overflow: hidden;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        min-height: 120px;
+    }
+    
+    .notice-tags-content {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .notice-tags {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        min-width: 100px;
+        max-width: 120px;
+    }
+    
+    .message-preview {
+        flex: 1;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        border-top: none !important;
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+        -webkit-line-clamp: 4 !important;
+        min-width: 0;
+        display: -webkit-box !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        color: var(--text-muted) !important;
+        text-align: left !important;
+        word-wrap: break-word !important;
     }
     
     .notice-header-left {
