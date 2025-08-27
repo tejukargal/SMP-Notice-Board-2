@@ -765,19 +765,22 @@ body.dark-mode {
     transform: translate(-50%, -50%);
     background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
     color: white;
-    padding: 4px 10px;
+    padding: 6px 12px;
     border-radius: 12px;
     font-size: 13px;
     font-weight: 600;
-    z-index: 10;
+    z-index: 100;
     opacity: 0;
     animation: flashTextShow 10s infinite;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(5px);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     pointer-events: none;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Staggered delays for flash text on different cards */
@@ -997,6 +1000,7 @@ body.dark-mode {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     position: relative;
     overflow: hidden;
     transform: scale(1);
@@ -1034,8 +1038,8 @@ body.dark-mode {
     border-radius: 20px;
     font-size: 0.85rem; /* Larger to match title */
     font-weight: 600;
-    border: 1px solid var(--input-border);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 2px solid var(--input-border);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
     transform: scale(1);
@@ -1050,8 +1054,8 @@ body.dark-mode {
     border-radius: 20px;
     font-size: 0.85rem; /* Larger to match title */
     font-weight: 600;
-    border: 1px solid var(--input-border);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 2px solid var(--input-border);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
     transform: scale(1);
@@ -1069,8 +1073,8 @@ body.dark-mode {
 .light-mode .category-tag {
     background: var(--input-bg-light);
     color: var(--text-light);
-    border: 1px solid var(--input-border-light);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 2px solid var(--input-border-light);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .light-mode .course-tag:hover,
@@ -1082,8 +1086,8 @@ body.dark-mode {
 .dark-mode .category-tag {
     background: var(--input-bg-dark);
     color: var(--text-dark);
-    border: 1px solid var(--input-border-dark);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--input-border-dark);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .dark-mode .course-tag:hover,
