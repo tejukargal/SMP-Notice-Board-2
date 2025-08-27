@@ -377,36 +377,35 @@ body.dark-mode {
     }
     
     .notice-tags-content {
-        flex-direction: row;
-        gap: 1rem;
-        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
     }
     
     .notice-tags {
         flex-direction: row;
         gap: 0.5rem;
-        min-width: 140px;
-        max-width: 180px;
+        width: 100%;
         align-items: center;
         flex-wrap: wrap;
+        justify-content: flex-start;
     }
     
     .message-preview {
-        flex: 1;
+        width: 100%;
         margin-top: 0;
         padding-top: 0;
-        padding-left: 0.5rem;
+        padding-left: 0;
         border-top: none;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         display: block;
-        max-height: 2.8em;
+        max-height: 3.2em;
         overflow: hidden;
         color: var(--text-muted);
-        line-height: 1.4;
+        line-height: 1.6;
         word-wrap: break-word;
         white-space: normal;
-        min-width: 0;
-        max-width: calc(100% - 190px);
+        text-overflow: ellipsis;
     }
 }
 
@@ -1107,14 +1106,16 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .message-preview {
-        font-size: 0.88rem;
+        font-size: 0.92rem;
         display: block;
-        max-height: 2.8em;
-        line-height: 1.4;
+        max-height: 3.2em;
+        line-height: 1.6;
         margin-top: 0.5rem;
         padding-top: 0.5rem;
         white-space: normal;
         overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
     }
 }
 
@@ -2545,38 +2546,37 @@ body.dark-mode {
     
     .notice-tags-content {
         display: flex;
-        gap: 1rem;
-        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
     }
     
     .notice-tags {
         display: flex;
         flex-direction: row;
         gap: 0.5rem;
-        flex-shrink: 0;
-        min-width: 140px;
-        max-width: 180px;
+        width: 100%;
         align-items: center;
         flex-wrap: wrap;
+        justify-content: flex-start;
     }
     
     .message-preview {
-        flex: 1;
+        width: 100% !important;
         margin-top: 0 !important;
         padding-top: 0 !important;
-        padding-left: 0.5rem !important;
+        padding-left: 0 !important;
         border-top: none !important;
-        font-size: 0.85rem !important;
-        line-height: 1.4 !important;
+        font-size: 0.9rem !important;
+        line-height: 1.6 !important;
         display: block !important;
-        max-height: 2.8em !important;
+        max-height: 3.2em !important;
         white-space: normal !important;
-        min-width: 0;
-        max-width: calc(100% - 190px);
         overflow: hidden !important;
         color: var(--text-muted) !important;
         text-align: left !important;
         word-wrap: break-word !important;
+        text-overflow: ellipsis !important;
     }
     
     .notice-header-left {
