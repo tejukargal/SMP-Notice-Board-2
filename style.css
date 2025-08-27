@@ -765,18 +765,19 @@ body.dark-mode {
     transform: translate(-50%, -50%);
     background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
     color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 600;
     z-index: 10;
     opacity: 0;
     animation: flashTextShow 10s infinite;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(5px);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     pointer-events: none;
+    white-space: nowrap;
 }
 
 /* Staggered delays for flash text on different cards */
@@ -814,9 +815,17 @@ body.dark-mode {
     color: white;
 }
 
+.notice-card:nth-child(1) .message-preview:after {
+    background: linear-gradient(90deg, #ff7b7b, transparent);
+}
+
 .notice-card:nth-child(2) .notice-number {
     background: #5c7cfa;
     color: white;
+}
+
+.notice-card:nth-child(2) .message-preview:after {
+    background: linear-gradient(90deg, #5c7cfa, transparent);
 }
 
 .notice-card:nth-child(3) .notice-number {
@@ -824,9 +833,17 @@ body.dark-mode {
     color: white;
 }
 
+.notice-card:nth-child(3) .message-preview:after {
+    background: linear-gradient(90deg, #4ecdc4, transparent);
+}
+
 .notice-card:nth-child(4) .notice-number {
     background: #ffa726;
     color: white;
+}
+
+.notice-card:nth-child(4) .message-preview:after {
+    background: linear-gradient(90deg, #ffa726, transparent);
 }
 
 .notice-card:nth-child(5) .notice-number {
@@ -834,14 +851,26 @@ body.dark-mode {
     color: white;
 }
 
+.notice-card:nth-child(5) .message-preview:after {
+    background: linear-gradient(90deg, #667eea, transparent);
+}
+
 .notice-card:nth-child(6) .notice-number {
     background: #f093fb;
     color: white;
 }
 
+.notice-card:nth-child(6) .message-preview:after {
+    background: linear-gradient(90deg, #f093fb, transparent);
+}
+
 .notice-card:nth-child(7) .notice-number {
     background: #4facfe;
     color: white;
+}
+
+.notice-card:nth-child(7) .message-preview:after {
+    background: linear-gradient(90deg, #4facfe, transparent);
 }
 
 /* For additional cards, cycle through the colors */
@@ -1205,6 +1234,18 @@ body.dark-mode {
     text-align: left;
     word-wrap: break-word;
     white-space: normal;
+    padding-bottom: 6px;
+}
+
+.message-preview:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    border-radius: 1px;
 }
 
 .message-preview:before {
