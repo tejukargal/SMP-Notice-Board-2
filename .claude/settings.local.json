@@ -25,12 +25,10 @@
       "Bash(curl:*)",
       "Bash(git rm:*)",
       "Bash(git stash:*)",
-      "Read(/D:\\Apps\\HTML Apps/**)"
+      "Read(/D:\\Apps\\HTML Apps/**)",
+      "Bash(git log:*)"
     ],
     "deny": [],
-    "ask": [],
-    "additionalDirectories": [
-      "D:\\d D:\\Apps"
-    ]
+    "ask": []
   }
 }
