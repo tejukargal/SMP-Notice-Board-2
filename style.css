@@ -367,7 +367,7 @@ body.dark-mode {
 
 @media (max-width: 768px) {
     .notice-container {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: 1fr;
         padding: 0.75rem;
         gap: 1rem;
     }
@@ -381,7 +381,7 @@ body.dark-mode {
     }
     
     .notice-card {
-        min-height: 180px;
+        min-height: 200px;
         max-height: none;
         padding: 1rem;
         /* Maintain colored borders on mobile */
@@ -602,7 +602,7 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .notice-card {
-        min-height: 180px;
+        min-height: 220px;
         max-height: none;
         padding: 1rem;
     }
@@ -989,7 +989,8 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .notice-content {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
+        -webkit-line-clamp: 3;
     }
 }
 
@@ -1046,8 +1047,8 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .message-preview {
-        font-size: 0.8rem;
-        -webkit-line-clamp: 2;
+        font-size: 0.85rem;
+        -webkit-line-clamp: 3;
     }
 }
 
@@ -2361,8 +2362,9 @@ body.dark-mode {
         min-width: calc(100vw - 32px);
         max-width: calc(100vw - 32px);
         margin: 0 16px;
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
+        min-height: 220px;
+        max-height: none;
+        overflow-y: visible;
         flex-shrink: 0;
         scroll-snap-align: center;
         position: relative;
@@ -2381,10 +2383,9 @@ body.dark-mode {
         padding: 4px 0;
         margin: 0;
         max-width: 100vw;
-        scroll-snap-type: x mandatory;
-        overscroll-behavior-x: contain;
-        overflow-x: scroll;
-        overflow-y: hidden;
+        overscroll-behavior-y: contain;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
     
     /* Optimize scrolling messages for mobile */
