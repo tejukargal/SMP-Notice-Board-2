@@ -601,7 +601,6 @@ function createNoticeCard(notice, index) {
     }
     
     card.innerHTML = `
-        <div class="click-flash-text">👆 Click to view details</div>
         <div class="notice-header">
             <div class="notice-header-left">
                 <div class="notice-number">No. ${notice.id}</div>
