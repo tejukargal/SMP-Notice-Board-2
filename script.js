@@ -622,7 +622,7 @@ function createNoticeCard(notice, index) {
         <div class="notice-body">
             <div class="notice-tags-content">
                 <div class="notice-tags">
-                    <span class="course-tag">${notice.course}</span>
+                    <span class="course-tag">${notice.course === 'ALL' ? 'All Courses' : notice.course}</span>
                     <span class="category-tag">${notice.category}</span>
                 </div>
                 <div class="message-preview">${messagePreview}</div>
