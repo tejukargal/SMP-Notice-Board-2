@@ -85,7 +85,7 @@ This is a static HTML/CSS/JavaScript application with no build dependencies.
 - **Auto-sync**: Background synchronization every 2 minutes when enabled
 - **Real-time Sync**: Immediate sync after notice modifications
 - **Offline Support**: Works offline with sync when connection restored
-- **Configuration**: Edit `BUILT_IN_SYNC` object in script.js:1957
+- **Configuration**: Edit `BUILT_IN_SYNC` object in script.js (search for "BUILT_IN_SYNC")
 
 ```javascript
 const BUILT_IN_SYNC = {
