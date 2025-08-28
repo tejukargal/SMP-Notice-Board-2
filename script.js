@@ -604,7 +604,7 @@ function createNoticeCard(notice, index) {
         <div class="notice-header">
             <div class="notice-header-left">
                 <div class="notice-number">No. ${notice.id}</div>
-                <h3 class="notice-title">${notice.title}</h3>
+                <h3 class="notice-title">${notice.title}<span class="info-text">Click to View Details</span></h3>
             </div>
             <div class="notice-header-right">
                 <div class="notice-header-right-top">

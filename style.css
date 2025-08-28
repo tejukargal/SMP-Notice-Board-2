@@ -233,67 +233,51 @@ body.dark-mode {
 
 /* Removed unused hover animation keyframes */
 
-/* Gradually slow appear and disappear animation */
-@keyframes messagePreviewAppearDisappear {
+/* Smooth zoom in and zoom out animation without disappearing */
+@keyframes messagePreviewZoomInOut {
     0% {
         opacity: 1;
         transform: scale(1);
     }
-    60% {
+    25% {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1.08);
     }
-    65% {
-        opacity: 0.9;
-        transform: scale(0.99);
-    }
-    70% {
-        opacity: 0.7;
-        transform: scale(0.98);
+    50% {
+        opacity: 1;
+        transform: scale(0.92);
     }
     75% {
-        opacity: 0.5;
-        transform: scale(0.97);
-    }
-    80% {
-        opacity: 0.3;
-        transform: scale(0.96);
-    }
-    85% {
-        opacity: 0.1;
-        transform: scale(0.95);
-    }
-    87% {
-        opacity: 0;
-        transform: scale(0.94);
-    }
-    88% {
-        opacity: 0;
-        transform: scale(0.94);
-    }
-    90% {
-        opacity: 0.1;
-        transform: scale(0.95);
-    }
-    92% {
-        opacity: 0.3;
-        transform: scale(0.96);
-    }
-    94% {
-        opacity: 0.5;
-        transform: scale(0.97);
-    }
-    96% {
-        opacity: 0.7;
-        transform: scale(0.98);
-    }
-    98% {
-        opacity: 0.9;
-        transform: scale(0.99);
+        opacity: 1;
+        transform: scale(1.05);
     }
     100% {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+/* Info text animation - appears every 10 seconds */
+@keyframes infoTextAppear {
+    0% {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    5% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    25% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    30% {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-10px);
     }
 }
 
@@ -742,7 +726,7 @@ body.dark-mode {
 }
 
 .notice-card:nth-child(1) .message-preview {
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     animation-delay: 0s; /* Start immediately */
 }
 
@@ -756,7 +740,7 @@ body.dark-mode {
 }
 
 .notice-card:nth-child(2) .message-preview {
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     animation-delay: 1.5s; /* Staggered timing */
 }
 
@@ -770,7 +754,7 @@ body.dark-mode {
 }
 
 .notice-card:nth-child(3) .message-preview {
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     animation-delay: 3s; /* Staggered timing */
 }
 
@@ -784,7 +768,7 @@ body.dark-mode {
 }
 
 .notice-card:nth-child(4) .message-preview {
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     animation-delay: 4.5s; /* Staggered timing */
 }
 
@@ -798,7 +782,7 @@ body.dark-mode {
 }
 
 .notice-card:nth-child(5) .message-preview {
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     animation-delay: 6s; /* Staggered timing */
 }
 
@@ -812,7 +796,7 @@ body.dark-mode {
 }
 
 .notice-card:nth-child(6) .message-preview {
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     animation-delay: 7.5s; /* Staggered timing */
 }
 
@@ -826,7 +810,7 @@ body.dark-mode {
 }
 
 .notice-card:nth-child(7) .message-preview {
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     animation-delay: 9s; /* Staggered timing */
 }
 
@@ -1121,9 +1105,75 @@ body.dark-mode {
     background: linear-gradient(90deg, var(--accent-dark), transparent);
 }
 
+/* Info text styling */
+.info-text {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(22, 163, 74, 0.8);
+    background: rgba(34, 197, 94, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    margin-left: 0.5rem;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    animation: infoTextAppear 10s infinite;
+    animation-delay: 2s;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.light-mode .info-text {
+    color: rgba(22, 163, 74, 0.8);
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(22, 163, 74, 0.2);
+}
+
+.dark-mode .info-text {
+    color: rgba(34, 197, 94, 0.9);
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* Staggered animation delays for different cards */
+.notice-card:nth-child(1) .info-text {
+    animation-delay: 2s;
+}
+
+.notice-card:nth-child(2) .info-text {
+    animation-delay: 3.5s;
+}
+
+.notice-card:nth-child(3) .info-text {
+    animation-delay: 5s;
+}
+
+.notice-card:nth-child(4) .info-text {
+    animation-delay: 6.5s;
+}
+
+.notice-card:nth-child(5) .info-text {
+    animation-delay: 8s;
+}
+
+.notice-card:nth-child(6) .info-text {
+    animation-delay: 9.5s;
+}
+
+.notice-card:nth-child(7) .info-text {
+    animation-delay: 11s;
+}
+
 @media (max-width: 480px) {
     .notice-title {
         font-size: 1rem;
+    }
+    
+    .info-text {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        margin-left: 0.3rem;
     }
 }
 
@@ -1192,8 +1242,8 @@ body.dark-mode {
     display: block;
     max-height: 3em;
     position: relative;
-    /* Ultra smooth appear/disappear animation - 10 seconds total */
-    animation: messagePreviewAppearDisappear 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    /* Ultra smooth zoom in/out animation without disappearing - 10 seconds total */
+    animation: messagePreviewZoomInOut 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
     will-change: opacity, transform;
     backface-visibility: hidden;
     text-align: left;
