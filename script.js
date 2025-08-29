@@ -134,7 +134,6 @@ const adminPassword = document.getElementById('adminPassword');
 const loginBtn = document.getElementById('loginBtn');
 const cancelLogin = document.getElementById('cancelLogin');
 const noticeForm = document.getElementById('noticeForm');
-const darkModeToggle = document.getElementById('darkModeToggle');
 const logoutBtn = document.getElementById('logoutBtn');
 const submitBtn = document.getElementById('submitBtn');
 const addNoticeBtn = document.getElementById('addNoticeBtn');
@@ -165,8 +164,6 @@ let autoSyncInterval = null;
 
 // Initialize the app
 async function init() {
-    loadDarkModePreference();
-    
     // Load all CSV files at startup - following reference implementation
     await loadAllCSVFiles();
     
@@ -759,8 +756,6 @@ function updateNavigation() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Dark mode toggle
-    darkModeToggle.addEventListener('click', toggleDarkMode);
 
     // Admin button click
     adminBtn.addEventListener('click', () => {
@@ -979,81 +974,9 @@ async function handleNoticeSubmission(e) {
 
 // Navigation functions removed - using grid layout instead
 
-// Dark mode functions
-function toggleDarkMode() {
-    const isCurrentlyDark = document.body.classList.contains('dark-mode');
-    
-    if (isCurrentlyDark) {
-        // Switch to light mode
-        document.body.classList.remove('dark-mode');
-        document.body.classList.add('light-mode');
-        updateCSSVariablesForLightMode();
-    } else {
-        // Switch to dark mode
-        const isCurrentlyLight = document.body.classList.contains('light-mode');
-        if (isCurrentlyLight) {
-            document.body.classList.remove('light-mode');
-        }
-        document.body.classList.add('dark-mode');
-        updateCSSVariablesForDarkMode();
-    }
-    
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    const iconSpan = darkModeToggle.querySelector('.btn-icon');
-    const textSpan = darkModeToggle.querySelector('.btn-text');
-    
-    if (iconSpan) iconSpan.textContent = isDarkMode ? '☀️' : '🌙';
-    if (textSpan) textSpan.textContent = isDarkMode ? 'Light' : 'Dark';
-    
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-}
 
-function updateCSSVariablesForLightMode() {
-    document.documentElement.style.setProperty('--bg', 'var(--bg-light)');
-    document.documentElement.style.setProperty('--card', 'var(--card-light)');
-    document.documentElement.style.setProperty('--card-gradient', 'var(--card-gradient-light)');
-    document.documentElement.style.setProperty('--muted', 'var(--muted-light)');
-    document.documentElement.style.setProperty('--accent', 'var(--accent-light)');
-    document.documentElement.style.setProperty('--text', 'var(--text-light)');
-    document.documentElement.style.setProperty('--text-muted', 'var(--text-muted-light)');
-    document.documentElement.style.setProperty('--border', 'var(--border-light)');
-    document.documentElement.style.setProperty('--input-bg', 'var(--input-bg-light)');
-    document.documentElement.style.setProperty('--input-border', 'var(--input-border-light)');
-}
 
-function updateCSSVariablesForDarkMode() {
-    document.documentElement.style.setProperty('--bg', 'var(--bg-dark)');
-    document.documentElement.style.setProperty('--card', 'var(--card-dark)');
-    document.documentElement.style.setProperty('--card-gradient', 'var(--card-gradient-dark)');
-    document.documentElement.style.setProperty('--muted', 'var(--muted-dark)');
-    document.documentElement.style.setProperty('--accent', 'var(--accent-dark)');
-    document.documentElement.style.setProperty('--text', 'var(--text-dark)');
-    document.documentElement.style.setProperty('--text-muted', 'var(--text-muted-dark)');
-    document.documentElement.style.setProperty('--border', 'var(--border-dark)');
-    document.documentElement.style.setProperty('--input-bg', 'var(--input-bg-dark)');
-    document.documentElement.style.setProperty('--input-border', 'var(--input-border-dark)');
-}
 
-function loadDarkModePreference() {
-    const themePreference = localStorage.getItem('theme');
-    const iconSpan = darkModeToggle.querySelector('.btn-icon');
-    const textSpan = darkModeToggle.querySelector('.btn-text');
-    
-    // Set light mode as default if no preference is saved
-    if (themePreference === 'dark') {
-        document.body.classList.add('dark-mode');
-        updateCSSVariablesForDarkMode();
-        if (iconSpan) iconSpan.textContent = '☀️';
-        if (textSpan) textSpan.textContent = 'Light';
-    } else {
-        // Default to light mode
-        document.body.classList.remove('dark-mode');
-        document.body.classList.add('light-mode');
-        updateCSSVariablesForLightMode();
-        if (iconSpan) iconSpan.textContent = '🌙';
-        if (textSpan) textSpan.textContent = 'Dark';
-    }
-}
 
 // Update admin buttons by re-rendering cards
 function updateAdminButtons(show) {
