@@ -1301,17 +1301,18 @@ body {
     color: #fff;
     line-height: 2rem;
     flex: 1;
+    padding-right: 2.5rem; /* Ensure title doesn't overlap close button */
 }
 
 .popup-close-btn {
     background: rgba(167, 139, 250, 1);
     color: rgba(17, 24, 39, 1);
     border: none;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 0.25rem;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -1320,8 +1321,9 @@ body {
     box-shadow: none;
     flex-shrink: 0;
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
 }
 
 .popup-close-btn:hover {
@@ -1463,6 +1465,14 @@ body {
     
     .notice-popup-header {
         padding: 1rem;
+    }
+    
+    .popup-close-btn {
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
     }
     
     .notice-popup-body {
