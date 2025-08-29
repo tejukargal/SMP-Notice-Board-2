@@ -601,11 +601,10 @@ function createNoticeCard(notice, index) {
         <div class="notice-header">
             <div class="notice-header-left">
                 <div class="notice-number">No. ${notice.id}</div>
-                <h3 class="notice-title">${notice.title}<span class="info-text">Click to View Details</span></h3>
+                <h3 class="notice-title">${notice.title}</h3>
             </div>
             <div class="notice-header-right">
                 <div class="notice-header-right-top">
-                    <span class="priority-tag priority-${notice.priority.toLowerCase()}">${notice.priority}</span>
                     ${isAdminLoggedIn ? `
                         <button class="edit-btn" title="Edit Notice" onclick="event.stopPropagation(); editNotice(${notice.id})">✏️</button>
                         <button class="delete-btn" title="Delete Notice" onclick="event.stopPropagation(); deleteNoticeWithSync(${notice.id})">🗑️</button>
@@ -616,15 +615,13 @@ function createNoticeCard(notice, index) {
                 </div>
             </div>
         </div>
-        <div class="notice-body">
-            <div class="notice-tags-content">
-                <div class="notice-tags">
-                    <span class="course-tag">${notice.course === 'ALL' ? 'All Courses' : notice.course}</span>
-                    <span class="category-tag">${notice.category}</span>
-                </div>
-                <div class="message-preview">${messagePreview}</div>
-            </div>
+        <div class="notice-content">${messagePreview}</div>
+        <div class="notice-tags">
+            <span class="priority-tag priority-${notice.priority.toLowerCase()}">${notice.priority}</span>
+            <span class="course-tag">${notice.course === 'ALL' ? 'All Courses' : notice.course}</span>
+            <span class="category-tag">${notice.category}</span>
         </div>
+        <button class="card-action">View Full Notice</button>
     `;
     
     // Add click event to open popup
