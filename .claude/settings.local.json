@@ -26,7 +26,10 @@
       "Bash(git rm:*)",
       "Bash(git stash:*)",
       "Read(/D:\\Apps\\HTML Apps/**)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(sed:*)",
+      "Read(c:\\Users\\Lekhana\\Downloads/**)",
+      "Read(c:\\Users\\Lekhana\\Downloads/**)"
     ],
     "deny": [],
     "ask": []
