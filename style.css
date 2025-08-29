@@ -1,15 +1,15 @@
 :root {
-    /* Light theme variables */
-    --bg: #f0f4f8; /* Soft blue-gray background */
-    --card: #ffffff; /* Pure white cards */
-    --card-gradient: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%); /* Subtle blue-tinted gradient */
-    --muted: #6c757d; /* Keep muted text color */
-    --accent: #4361ee; /* Modern blue accent */
-    --text: #333333; /* Darker text for better readability */
-    --text-muted: #5d6d7e; /* Softer muted text */
-    --border: #d1dce5; /* Light blue-gray border */
-    --input-bg: #ffffff; /* White input backgrounds */
-    --input-border: #bbc8d3; /* Soft blue-gray input borders */
+    /* Dark theme variables */
+    --bg: rgba(31, 41, 55, 1); /* Dark gray background */
+    --card: rgba(17, 24, 39, 1); /* Dark card background */
+    --card-gradient: linear-gradient(180deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 100%); /* Dark gradient */
+    --muted: rgba(156, 163, 175, 1); /* Muted gray text */
+    --accent: rgba(167, 139, 250, 1); /* Purple accent */
+    --text: rgba(229, 231, 235, 1); /* Light text */
+    --text-muted: rgba(156, 163, 175, 1); /* Muted text */
+    --border: rgba(75, 85, 99, 1); /* Dark border */
+    --input-bg: rgba(31, 41, 55, 1); /* Dark input background */
+    --input-border: rgba(75, 85, 99, 1); /* Dark input border */
     --ok: #31d0aa;
     --warn: #ffd166;
     --bad: #ff7676;
@@ -23,8 +23,8 @@
 
 body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    background: rgba(31, 41, 55, 1);
+    color: rgba(229, 231, 235, 1);
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -510,9 +510,9 @@ body {
         min-height: 200px;
         max-height: none;
         padding: 1rem;
-        /* Maintain consistent thin borders on mobile */
+        /* Maintain consistent colored borders on mobile */
         border-radius: 0.75rem;
-        border: 2px solid rgba(22, 163, 74, 0.8); /* Green theme border for mobile */
+        border: 1px solid rgba(167, 139, 250, 1);
     }
     
     .notice-header {
@@ -574,7 +574,7 @@ body {
     min-height: 200px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: none;
+    border: 1px solid rgba(167, 139, 250, 1);
     width: 320px;
     /* Smooth zoom in/out animation - every 15 seconds */
     animation: cardZoomCycle 15s ease-in-out infinite;
@@ -611,7 +611,10 @@ body {
     animation-delay: 12s;
 }
 
-/* Hover animations removed */
+.notice-card:hover {
+    border-color: rgba(147, 116, 242, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(167, 139, 250, 0.4);
+}
 
 /* Message preview hover animation removed */
 
@@ -633,7 +636,7 @@ body {
         padding: 1rem;
         overflow: visible;
         border-radius: 0.75rem; /* Maintain rounded corners on mobile */
-        border: 2px solid rgba(22, 163, 74, 0.8); /* Maintain green theme border on mobile */
+        border: 1px solid rgba(167, 139, 250, 1); /* Purple theme border on mobile */
     }
 }
 
@@ -839,6 +842,7 @@ body {
     position: relative;
     overflow: hidden;
     letter-spacing: 0.05em;
+    animation: slideInFromLeft 0.4s ease-out;
 }
 
 .notice-number:after {
@@ -855,6 +859,11 @@ body {
 
 .notice-number:hover:after {
     left: 120%;
+}
+
+.notice-number:hover {
+    transform: scale(1.05);
+    animation: tagPulse 1.5s ease-in-out infinite;
 }
 
 .notice-tags {
@@ -882,11 +891,13 @@ body {
     transform: scale(1);
     transition: all 0.2s ease;
     text-align: center;
+    animation: slideInFromLeft 0.8s ease-out;
 }
 
 .priority-tag:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    animation: tagPulse 1.5s ease-in-out infinite;
 }
 
 .priority-high {
@@ -1175,12 +1186,14 @@ body {
     margin-top: auto;
     font-size: 0.75rem;
     min-height: 24px;
+    animation: slideInFromLeft 1s ease-out;
 }
 
 .card-action:hover {
     background-color: rgba(147, 116, 242, 1);
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.02);
     box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+    animation: tagPulse 1.5s ease-in-out infinite;
 }
 
 .message-preview:after {
@@ -1588,7 +1601,7 @@ body {
     gap: 0.5rem;
     margin-bottom: 1.5rem;
     padding: 0.8rem;
-    background: #f8f9fa;
+    background: rgba(31, 41, 55, 1);
     border-radius: 8px;
     border-left: 4px solid #95a5a6;
 }
@@ -1738,12 +1751,14 @@ body {
     transform: scale(1);
     min-height: 24px;
     min-width: 24px;
+    animation: slideInFromRight 0.5s ease-out;
 }
 
 .edit-btn:hover {
     background: rgba(147, 116, 242, 1);
     transform: scale(1.05);
     box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+    animation: tagPulse 1.5s ease-in-out infinite;
 }
 
 .delete-btn {
@@ -1763,12 +1778,14 @@ body {
     transform: scale(1);
     min-height: 24px;
     min-width: 24px;
+    animation: slideInFromRight 0.6s ease-out;
 }
 
 .delete-btn:hover {
     background: rgba(147, 116, 242, 1);
     transform: scale(1.05);
     box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+    animation: tagPulse 1.5s ease-in-out infinite;
 }
 
 @media (pointer: coarse) {
@@ -2925,10 +2942,10 @@ body {
 /* Add a subtle pulse animation on hover for tags */
 @keyframes tagPulse {
     0%, 100% {
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
     }
     50% {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 20px rgba(167, 139, 250, 0.6);
     }
 }
 
