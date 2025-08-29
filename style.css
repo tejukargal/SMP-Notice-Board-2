@@ -124,10 +124,12 @@ body {
     0%, 100% {
         transform: scale(1);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 2px solid rgba(192, 174, 255, 0.9) !important;
     }
     50% {
         transform: scale(1.03);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        border: 2px solid rgba(192, 174, 255, 0.9) !important;
     }
 }
 
@@ -512,7 +514,7 @@ body {
         padding: 1rem;
         /* Maintain consistent colored borders on mobile */
         border-radius: 0.75rem;
-        border: 2px solid rgba(192, 174, 255, 0.9);
+        border: 2px solid rgba(192, 174, 255, 0.9) !important;
     }
     
     .notice-header {
@@ -569,15 +571,14 @@ body {
     cursor: pointer;
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
                 box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                background-color 0.4s ease,
-                border-color 0.4s ease;
+                background-color 0.4s ease;
     min-height: 200px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 2px solid rgba(192, 174, 255, 0.9);
+    border: 2px solid rgba(192, 174, 255, 0.9) !important;
     width: 320px;
-    /* Smooth zoom in/out animation - every 15 seconds */
-    animation: cardZoomCycle 15s ease-in-out infinite;
+    /* Smooth zoom in/out animation - every 15 seconds - temporarily disabled */
+    /* animation: cardZoomCycle 15s ease-in-out infinite; */
     align-items: stretch;
     margin-bottom: 2rem;
 }
@@ -612,7 +613,7 @@ body {
 }
 
 .notice-card:hover {
-    border-color: rgba(218, 203, 255, 1);
+    border: 2px solid rgba(218, 203, 255, 1) !important;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(192, 174, 255, 0.6);
     transform: translateY(-2px);
 }
@@ -637,7 +638,7 @@ body {
         padding: 1rem;
         overflow: visible;
         border-radius: 0.75rem; /* Maintain rounded corners on mobile */
-        border: 2px solid rgba(192, 174, 255, 0.9); /* Brighter purple theme border on mobile */
+        border: 2px solid rgba(192, 174, 255, 0.9) !important; /* Brighter purple theme border on mobile */
     }
 }
 
